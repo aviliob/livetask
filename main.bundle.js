@@ -1082,7 +1082,7 @@ var SelectDialogComponent = /** @class */ (function () {
 /***/ "./src/app/inbox/inbox.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<header class=\"main-header d-flex justify-content-center align-items-center\">\r\n\t<h2 [innerText]=\"title\"></h2>\r\n</header>\r\n<section class=\"main-content\">\r\n\t<div class=\"inbox-tasks h-100 d-flex flex-column w-100\" id=\"inbox\">\r\n\t\t<div class=\"w-100 h-100 d-flex\">\r\n\t\t\t<ul *ngIf=\"haveTasks()\" class=\"main-list list-unstyled d-flex w-100 flex-column\">\r\n\t\t\t\t<template *ngFor=\"let task of tasks\">\r\n\t\t\t\t\t<li class=\"w-100\" *ngIf=\"belongsHere(task)\">\r\n\t\t\t\t\t\t<div class=\"li-content d-flex h-100\">\r\n\t\t\t\t\t\t\t<div class=\"li-left d-flex justify-content-center align-items-center\">\r\n\t\t\t\t\t\t\t\t<label class=\"task-name m-0\">{{task.name}}</label>\r\n\t\t\t\t\t\t\t</div>\r\n\t\t\t\t\t\t\t<div class=\"li-right d-flex flex-column ml-auto mr-0 justify-content-center align-items-center\">\r\n\t\t\t\t\t\t\t\t<label class=\"from m-0\" *ngIf=\"hasFromName(task);else noHasName\">{{task.from.name}}</label>\r\n\t\t\t\t\t\t\t\t<ng-template class=\"from m-0\" #noHasName>{{task.from_mail}}</ng-template>\r\n\t\t\t\t\t\t\t\t<label class=\"created m-0\">{{task.created.date}}</label>\r\n\t\t\t\t\t\t\t</div>\r\n\t\t\t\t\t\t\t<div class=\"options\">\r\n\t\t\t\t\t\t\t\t<ul class=\"d-flex list-unstyled h-100\">\r\n\t\t\t\t\t\t\t\t\t<li class=\"btn-accept\">\r\n\t\t\t\t\t\t\t\t\t\t<a href=\"#\" (click)=\"acceptTask($event,task)\">{{btnAccept}}</a>\r\n\t\t\t\t\t\t\t\t\t</li>\r\n\t\t\t\t\t\t\t\t\t<li class=\"btn-reject\">\r\n\t\t\t\t\t\t\t\t\t\t<a href=\"#\" (click)=\"rejectTask($event,task)\">{{btnReject}}</a>\r\n\t\t\t\t\t\t\t\t\t</li>\r\n\t\t\t\t\t\t\t\t</ul>\r\n\t\t\t\t\t\t\t</div>\r\n\t\t\t\t\t\t</div>\r\n\t\t\t\t\t</li>\r\n\t\t\t\t</template>\r\n\t\t\t</ul>\r\n\t\t\t<div *ngIf=\"!haveTasks()\" class=\"without-tasks d-flex w-100 h-100 justify-content-center align-items-center text-center\">\r\n\t\t\t\t<p class=\"m-0\">{{noTasks}}</p>\r\n\t\t\t</div>\r\n\t\t</div>\r\n\t</div>\r\n</section>\r\n<app-select-dialog *ngIf=\"showSelectDialog\" [options]=\"folders\" [title]=\"selectTitle\" (response)=\"getSelectResponse($event)\" ></app-select-dialog>"
+module.exports = "<header class=\"main-header d-flex justify-content-center align-items-center\">\r\n\t<h2 [innerText]=\"title\"></h2>\r\n</header>\r\n<section class=\"main-content\">\r\n\t<div class=\"inbox-tasks h-100 d-flex flex-column w-100\" id=\"inbox\">\r\n\t\t<div class=\"w-100 h-100 d-flex\">\r\n\t\t\t<ul *ngIf=\"haveTasks()\" class=\"main-list list-unstyled d-flex w-100 flex-column\">\r\n\t\t\t\t<template *ngFor=\"let task of tasks\">\r\n\t\t\t\t\t<li class=\"w-100\" *ngIf=\"belongsHere(task)\">\r\n\t\t\t\t\t\t<div class=\"li-content d-flex h-100\">\r\n\t\t\t\t\t\t\t<div class=\"li-left d-flex justify-content-center align-items-center\">\r\n\t\t\t\t\t\t\t\t<label class=\"task-name m-0\">{{task.name}}</label>\r\n\t\t\t\t\t\t\t</div>\r\n\t\t\t\t\t\t\t<div class=\"li-right d-flex flex-column ml-auto mr-0 justify-content-center align-items-center\">\r\n\t\t\t\t\t\t\t\t<label class=\"from m-0\" *ngIf=\"hasFromName(task);else noHasName\">{{task.from.name}}</label>\r\n\t\t\t\t\t\t\t\t<ng-template class=\"from m-0\" #noHasName>{{task.from_mail}}</ng-template>\r\n\t\t\t\t\t\t\t\t<label class=\"created m-0\">{{task.created.date}}</label>\r\n\t\t\t\t\t\t\t</div>\r\n\t\t\t\t\t\t\t<div class=\"options\">\r\n\t\t\t\t\t\t\t\t<ul class=\"d-flex list-unstyled h-100\">\r\n\t\t\t\t\t\t\t\t\t<li class=\"btn-accept\">\r\n\t\t\t\t\t\t\t\t\t\t<a href=\"#\" (click)=\"acceptTask($event,task)\">{{btnAccept}}</a>\r\n\t\t\t\t\t\t\t\t\t</li>\r\n\t\t\t\t\t\t\t\t\t<li class=\"btn-reject\">\r\n\t\t\t\t\t\t\t\t\t\t<a href=\"#\" (click)=\"rejectTask($event,task)\">{{btnReject}}</a>\r\n\t\t\t\t\t\t\t\t\t</li>\r\n\t\t\t\t\t\t\t\t</ul>\r\n\t\t\t\t\t\t\t</div>\r\n\t\t\t\t\t\t</div>\r\n\t\t\t\t\t</li>\r\n\t\t\t\t</template>\r\n\t\t\t</ul>\r\n\t\t\t<div *ngIf=\"!haveTasks()\" class=\"without-tasks d-flex w-100 h-100 justify-content-center align-items-center text-center\">\r\n\t\t\t\t<p class=\"m-0\">{{noTasks1}} <br /> {{noTasks2}}</p>\r\n\t\t\t</div>\r\n\t\t</div>\r\n\t</div>\r\n</section>\r\n<app-select-dialog *ngIf=\"showSelectDialog\" [options]=\"folders\" [title]=\"selectTitle\" (response)=\"getSelectResponse($event)\" ></app-select-dialog>"
 
 /***/ }),
 
@@ -1129,7 +1129,8 @@ var InboxComponent = /** @class */ (function () {
         this.firebaseDB = firebaseDB;
         this.btnAccept = undefined;
         this.btnReject = undefined;
-        this.noTasks = undefined;
+        this.noTasks1 = undefined;
+        this.noTasks2 = undefined;
         this.texts = undefined;
         this.language = "en";
         this.showSelectDialog = false;
@@ -1149,7 +1150,8 @@ var InboxComponent = /** @class */ (function () {
             _this.btnAccept = k.find(function (f) { return f.name == "inbox_taskslide_accept"; }).description[lang];
             _this.btnReject = k.find(function (f) { return f.name == "inbox_taskslide_reject"; }).description[lang];
             var noTaskaux = k.find(function (f) { return f.name == "inbox_info"; }).description[lang];
-            _this.noTasks = noTaskaux.replace(/\n/g, "<br />");
+            _this.noTasks1 = noTaskaux.split(/\n/g)[0];
+            _this.noTasks2 = noTaskaux.split(/\n/g)[1];
             _this.title = k.find(function (f) { return f.name == "inbox"; }).description[lang];
         });
     };
