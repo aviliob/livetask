@@ -318,6 +318,9 @@ var AppModule = /** @class */ (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angular2_cookie_core__ = __webpack_require__("./node_modules/angular2-cookie/core.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angular2_cookie_core___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_angular2_cookie_core__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_router__ = __webpack_require__("./node_modules/@angular/router/esm5/router.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__profile_service__ = __webpack_require__("./src/app/profile.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_angularfire2_database__ = __webpack_require__("./node_modules/angularfire2/database/index.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_angularfire2_database___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_angularfire2_database__);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -331,16 +334,20 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
+
+
 var httpOptions = {
     headers: new __WEBPACK_IMPORTED_MODULE_1__angular_common_http__["c" /* HttpHeaders */]({
         'Content-Type': 'application/json'
     })
 };
 var AuthService = /** @class */ (function () {
-    function AuthService(http, cookieService, router) {
+    function AuthService(http, cookieService, router, ps, firebaseDB) {
         this.http = http;
         this.cookieService = cookieService;
         this.router = router;
+        this.ps = ps;
+        this.firebaseDB = firebaseDB;
         this.base_url = 'https://us-central1-livetask-363bb.cloudfunctions.net/api/auth/';
     }
     ;
@@ -362,9 +369,24 @@ var AuthService = /** @class */ (function () {
      * @description Checks if there is any access token in cookies, if not, it redirect to login page
      */
     AuthService.prototype.verifyAccessToken = function () {
+        var _this = this;
         var accessToken = this.cookieService.get('accessToken');
+        var lang = localStorage.getItem("lang");
+        var mail = localStorage.getItem("mail");
+        var navLang = this.getDefaultLang();
         if (accessToken == undefined) {
             this.router.navigate(['login']);
+        }
+        else if (lang === undefined) {
+            this.ps.getProfile(mail).subscribe(function (data) {
+                if (data.lang === undefined) {
+                    data.lang = navLang;
+                    _this.ps.updateProfile(data);
+                }
+                else {
+                    localStorage.setItem("lang", data.lang);
+                }
+            });
         }
     };
     /**
@@ -377,22 +399,32 @@ var AuthService = /** @class */ (function () {
     AuthService.prototype.registerUser = function (mail, pass, name) {
         var path = 'register';
         var url = this.base_url + path;
-        return this.http.post(url, { mail: mail, pass: pass, name: name }, httpOptions).pipe();
+        var lang = this.getDefaultLang();
+        return this.http.post(url, { mail: mail, pass: pass, name: name, lang: lang }, httpOptions).pipe();
     };
     /**
      * Recovery Password
      * @param {string} mail User email
-     * @returns Returns if the recovery password has been sent to the `mail` if is registered
+     * @returns Returns if the recovery password has been sent to the `mail` registered
      */
     AuthService.prototype.recoveryPassWord = function (mail) {
         var url = "https://us-central1-livetask-363bb.cloudfunctions.net/api/recovery";
         return this.http.post(url, { mail: mail });
     };
+    AuthService.prototype.getDefaultLang = function () {
+        var navLanguage = navigator.language.split("-")[0] !== undefined ? navigator.language.split("-")[0] : "en";
+        this.firebaseDB.list('/text/list_language').valueChanges().subscribe(function (data) {
+            console.log("lang pepe", data); //here
+        });
+        return navLanguage;
+    };
     AuthService = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Injectable"])(),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__angular_common_http__["a" /* HttpClient */],
             __WEBPACK_IMPORTED_MODULE_2_angular2_cookie_core__["CookieService"],
-            __WEBPACK_IMPORTED_MODULE_3__angular_router__["b" /* Router */]])
+            __WEBPACK_IMPORTED_MODULE_3__angular_router__["b" /* Router */],
+            __WEBPACK_IMPORTED_MODULE_4__profile_service__["a" /* ProfileService */],
+            __WEBPACK_IMPORTED_MODULE_5_angularfire2_database__["AngularFireDatabase"]])
     ], AuthService);
     return AuthService;
 }());
@@ -599,7 +631,8 @@ var FeedBackComponent = /** @class */ (function () {
         this.btnSend = undefined;
         this.subject = undefined;
         this.texts = undefined;
-        this.language = "en";
+        this.language = undefined;
+        this.language = localStorage.getItem("lang");
     }
     FeedBackComponent.prototype.ngOnInit = function () {
         this.loadLanguage(this.language);
@@ -878,13 +911,14 @@ var HeaderComponent = /** @class */ (function () {
         this.router = router;
         this.firebaseDB = firebaseDB;
         this.texts = undefined;
-        this.language = "en";
+        this.language = undefined;
         this.myWorks = undefined;
         this.inbox = undefined;
         this.follow = undefined;
         this.extentions = undefined;
         this.feedback = undefined;
         this.logout = undefined;
+        this.language = localStorage.getItem("lang");
     }
     HeaderComponent.prototype.ngOnInit = function () {
         var _this = this;
@@ -1022,8 +1056,9 @@ var SelectDialogComponent = /** @class */ (function () {
         this.btnAccept = undefined;
         this.btnCancel = undefined;
         this.texts = undefined;
-        this.language = "en";
+        this.language = undefined;
         this.response = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["EventEmitter"]();
+        this.language = localStorage.getItem("lang");
     }
     SelectDialogComponent.prototype.ngOnInit = function () {
         this.setSelected();
@@ -1132,10 +1167,11 @@ var InboxComponent = /** @class */ (function () {
         this.noTasks1 = undefined;
         this.noTasks2 = undefined;
         this.texts = undefined;
-        this.language = "en";
+        this.language = undefined;
         this.showSelectDialog = false;
         this.selectTitle = "Folder de destino";
         this.user_mail = localStorage.getItem("mail");
+        this.language = localStorage.getItem("lang");
     }
     InboxComponent.prototype.ngOnInit = function () {
         this.titleService.setTitle(this.title);
@@ -1291,14 +1327,14 @@ var LogService = /** @class */ (function () {
 /***/ "./src/app/login/login.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<app-header-full></app-header-full>\r\n<main class=\"d-flex flex-column full-main\">\r\n\t\t\r\n\t<section class=\"main-content w-100 h-100\">\r\n\t\t\r\n\t\t<div class=\"w-100 h-100 d-flex justify-content-center align-items-center login-form container\" id=\"login\">\r\n\t\t\t<!--<form class=\"d-flex flex-column\" (submit)=\"auth($event,mail.value,pass.value,nameuser.value)\">-->\r\n\t\t\t<form class=\"d-flex flex-column\" (submit)=\"auth($event,mail.value,pass.value,nameuser.value)\">\r\n\t\t\t\t<div class=\"info-content w-100\">\r\n\t\t\t\t\t<p>Text</p>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"log-content w-100\">\r\n\t\t\t\t\t<p *ngIf=\"log\">{{log}}</p>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"form-header d-flex\">\r\n\t\t\t\t\t<div class=\"w-50 text-center active change-form login-btn\" (click)=\"changeFormType($event)\">\r\n\t\t\t\t\t\t<h3 class=\"mb-0 text-uppercase\">{{titleTab1}}</h3>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t\t<div class=\"w-50 text-center change-form register-btn\" (click)=\"changeFormType($event)\">\r\n\t\t\t\t\t\t<h3 class=\"mb-0 text-uppercase\">{{titleTab2}}</h3>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"form-body d-flex flex-column mb-0\">\r\n\t\t\t\t\t<input [ngClass]=\"{'d-none':!register}\" class=\"form-control mb-2\" type=\"text\" required=\"true\" placeholder=\"{{phName}}\" #nameuser>\r\n\t\t\t\t\t<input id=\"mail\" class=\"form-control mb-2\" type=\"email\" required=\"true\" placeholder=\"{{phMail}}\" #mail>\r\n\t\t\t\t\t<input type=\"password\" class=\"form-control\" required=\"true\" placeholder=\"{{phPass}}\" #pass>\r\n\t\t\t\t\t<div class=\"form-group d-flex flex-row-reverse mt-2\">\r\n\t\t\t\t\t\t<a [ngClass]=\"{'d-none':register}\" href=\"#\" (click)=\"recoveryPassword($event)\"><small>{{recoverPass}}</small></a>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"form-footer d-flex flex-column\">\r\n\t\t\t\t\t<div class=\"form-group d-flex flex-column mb-4\">\r\n\t\t\t\t\t\t<button type=\"submit\" class=\"btn btn-primary ml-1 w-100 mb-3\"><span>{{sendText}}</span></button>\r\n\t\t\t\t\t\t<button class=\"btn btn-primary google-login w-100 ml-1\" (click)=\"socialSignIn('google')\">\r\n\t\t\t\t\t\t\t<i class=\"fa fa-google-plus mr-2\"></i>\r\n\t\t\t\t\t\t\t{{btnGoogle}}\r\n\t\t\t\t\t\t</button>\r\n\t\t\t\t\t\t<!--\r\n\t\t\t\t\t\t<button class=\"btn btn-default\" (click)=\"changeFormType($event)\">Registrarme</button>\r\n\t\t\t\t\t\t<button class=\"btn btn-default\" (click)=\"registerUser($event,mail.value,pass.value)\">Registrarme</button>-->\r\n\t\t\t\t\t</div>\t\t\t\t\t\r\n\t\t\t\t</div>\r\n\t\t\t\t<!--\t\r\n\t\t\t\t    <div v-if=\"error != 0\">\r\n\t\t\t\t        {{ error }}\r\n\t\t\t\t    </div>\r\n\t\t\t\t-->\r\n\t\t\t</form>\r\n\t\t</div>\r\n\t</section>\r\n</main>"
+module.exports = "<app-header-full></app-header-full>\r\n<main class=\"d-flex flex-column full-main\">\r\n\t\t\r\n\t<section class=\"main-content w-100 h-100\">\r\n\t\t\r\n\t\t<div class=\"w-100 h-100 d-flex justify-content-center align-items-center login-form container\" id=\"login\">\r\n\t\t\t<!--<form class=\"d-flex flex-column\" (submit)=\"auth($event,mail.value,pass.value,nameuser.value)\">-->\r\n\t\t\t<form class=\"d-flex flex-column\" (submit)=\"auth($event,mail.value,pass.value,nameuser.value)\">\r\n\t\t\t\t\t<div class=\"info-content w-100\">\r\n\t\t\t\t\t\t\t<p>Text</p>\r\n\t\t\t\t\t\t</div>\r\n\t\t\t\t\t\t<div class=\"info-content2 w-100\">\r\n\t\t\t\t\t\t\t<p>Text</p>\r\n\t\t\t\t\t\t</div>\r\n\t\t\t\t<div class=\"log-content w-100\">\r\n\t\t\t\t\t<p *ngIf=\"log\">{{log}}</p>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"form-header d-flex\">\r\n\t\t\t\t\t<div class=\"w-50 text-center active change-form login-btn\" (click)=\"changeFormType($event)\">\r\n\t\t\t\t\t\t<h3 class=\"mb-0 text-uppercase\">{{titleTab1}}</h3>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t\t<div class=\"w-50 text-center change-form register-btn\" (click)=\"changeFormType($event)\">\r\n\t\t\t\t\t\t<h3 class=\"mb-0 text-uppercase\">{{titleTab2}}</h3>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"form-body d-flex flex-column mb-0\">\r\n\t\t\t\t\t<input [ngClass]=\"{'d-none':!register}\" class=\"form-control mb-2\" type=\"text\" required=\"true\" placeholder=\"{{phName}}\" #nameuser>\r\n\t\t\t\t\t<input id=\"mail\" class=\"form-control mb-2\" type=\"email\" required=\"true\" placeholder=\"{{phMail}}\" #mail>\r\n\t\t\t\t\t<input type=\"password\" class=\"form-control\" required=\"true\" placeholder=\"{{phPass}}\" #pass>\r\n\t\t\t\t\t<div class=\"form-group d-flex flex-row-reverse mt-2\">\r\n\t\t\t\t\t\t<a [ngClass]=\"{'d-none':register}\" href=\"#\" (click)=\"recoveryPassword($event)\"><small>{{recoverPass}}</small></a>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"form-footer d-flex flex-column\">\r\n\t\t\t\t\t<div class=\"form-group d-flex flex-column mb-4\">\r\n\t\t\t\t\t\t<button type=\"submit\" class=\"btn btn-primary ml-1 w-100 mb-3\"><span>{{sendText}}</span></button>\r\n\t\t\t\t\t\t<button class=\"btn btn-primary google-login w-100 ml-1\" (click)=\"socialSignIn('google')\">\r\n\t\t\t\t\t\t\t<i class=\"fa fa-google-plus mr-2\"></i>\r\n\t\t\t\t\t\t\t{{btnGoogle}}\r\n\t\t\t\t\t\t</button>\r\n\t\t\t\t\t\t<!--\r\n\t\t\t\t\t\t<button class=\"btn btn-default\" (click)=\"changeFormType($event)\">Registrarme</button>\r\n\t\t\t\t\t\t<button class=\"btn btn-default\" (click)=\"registerUser($event,mail.value,pass.value)\">Registrarme</button>-->\r\n\t\t\t\t\t</div>\t\t\t\t\t\r\n\t\t\t\t</div>\r\n\t\t\t\t<!--\t\r\n\t\t\t\t    <div v-if=\"error != 0\">\r\n\t\t\t\t        {{ error }}\r\n\t\t\t\t    </div>\r\n\t\t\t\t-->\r\n\t\t\t\t\r\n\t\t\t</form>\r\n\t\t</div>\r\n\t</section>\r\n</main>"
 
 /***/ }),
 
 /***/ "./src/app/login/login.component.scss":
 /***/ (function(module, exports) {
 
-module.exports = "section {\n  height: 100%;\n  background-color: #fff; }\n  section .login-form form {\n    position: relative;\n    width: 350px;\n    -webkit-box-shadow: 0 0 15px 0px rgba(0, 0, 0, 0.2);\n            box-shadow: 0 0 15px 0px rgba(0, 0, 0, 0.2); }\n  section .login-form form .log-content {\n      position: absolute;\n      top: -35px;\n      font-size: 0.9em;\n      color: #ffb500;\n      font-weight: 600;\n      text-align: center; }\n  section .login-form form .info-content {\n      position: absolute;\n      top: -115px;\n      font-size: 0.9em;\n      color: #0184d2;\n      font-weight: 600;\n      text-align: center; }\n  section .login-form form .form-header div {\n      padding-top: 22px;\n      padding-bottom: 15px;\n      border-bottom: solid 3px #d2d2d2;\n      cursor: pointer; }\n  section .login-form form .form-header div h3 {\n        font-size: 1.01em;\n        font-weight: 600;\n        color: #d2d2d2;\n        margin-bottom: 15px; }\n  section .login-form form .form-header div.active {\n      border-bottom: solid 3px #499bd9; }\n  section .login-form form .form-header div.active h3 {\n        color: #0184d2; }\n  section .login-form form .form-body {\n      padding: 35px 40px 0px; }\n  section .login-form form .form-body input[type='text'].form-control, section .login-form form .form-body input[type='password'].form-control, section .login-form form .form-body input[type='email'].form-control {\n        border: 0;\n        background-color: #f2f2f2;\n        font-size: 0.8em;\n        border-radius: 5px;\n        padding: 10px 15px; }\n  section .login-form form .form-body small {\n        font-size: 0.75em;\n        font-style: italic;\n        margin-right: 5px;\n        font-weight: 500; }\n  section .login-form form .form-footer {\n      padding: 0px 40px; }\n  section .login-form form .btn {\n      display: -webkit-box;\n      display: -ms-flexbox;\n      display: flex;\n      -webkit-box-pack: center;\n      -ms-flex-pack: center;\n      justify-content: center;\n      -webkit-box-align: center;\n      -ms-flex-align: center;\n      align-items: center;\n      width: 120px;\n      height: 50px;\n      font-size: 0.85em; }\n  section .login-form form .btn-default {\n      color: #0184d2; }\n  section .login-form form .btn.google-login {\n      background-color: #f92f25;\n      border: solid 1px #f92f25; }\n  section .login-form form .btn.google-login:hover {\n      background-color: #fff;\n      color: #f92f25; }\n  section .login-form form .btn.google-login:hover i {\n        color: #f92f25; }\n"
+module.exports = "section {\n  height: 100%;\n  background-color: #fff; }\n  section .info-content {\n    position: absolute;\n    top: -90px;\n    font-size: 0.9em;\n    color: #0184d2;\n    font-weight: 600;\n    text-align: center; }\n  section .info-content2 {\n    position: absolute;\n    bottom: -70px;\n    font-size: 0.9em;\n    color: #8eb4cb; }\n  section .info-content2 p {\n      text-align: center; }\n  section .login-form form {\n    position: relative;\n    width: 350px;\n    -webkit-box-shadow: 0 0 15px 0px rgba(0, 0, 0, 0.2);\n            box-shadow: 0 0 15px 0px rgba(0, 0, 0, 0.2); }\n  section .login-form form .log-content {\n      position: absolute;\n      top: -35px;\n      font-size: 0.9em;\n      color: #ffb500;\n      font-weight: 600;\n      text-align: center; }\n  section .login-form form .form-header div {\n      padding-top: 22px;\n      padding-bottom: 15px;\n      border-bottom: solid 3px #d2d2d2;\n      cursor: pointer; }\n  section .login-form form .form-header div h3 {\n        font-size: 1.01em;\n        font-weight: 600;\n        color: #d2d2d2;\n        margin-bottom: 15px; }\n  section .login-form form .form-header div.active {\n      border-bottom: solid 3px #499bd9; }\n  section .login-form form .form-header div.active h3 {\n        color: #0184d2; }\n  section .login-form form .form-body {\n      padding: 35px 40px 0px; }\n  section .login-form form .form-body input[type='text'].form-control, section .login-form form .form-body input[type='password'].form-control, section .login-form form .form-body input[type='email'].form-control {\n        border: 0;\n        background-color: #f2f2f2;\n        font-size: 0.8em;\n        border-radius: 5px;\n        padding: 10px 15px; }\n  section .login-form form .form-body small {\n        font-size: 0.75em;\n        font-style: italic;\n        margin-right: 5px;\n        font-weight: 500; }\n  section .login-form form .form-footer {\n      padding: 0px 40px; }\n  section .login-form form .btn {\n      display: -webkit-box;\n      display: -ms-flexbox;\n      display: flex;\n      -webkit-box-pack: center;\n      -ms-flex-pack: center;\n      justify-content: center;\n      -webkit-box-align: center;\n      -ms-flex-align: center;\n      align-items: center;\n      width: 120px;\n      height: 50px;\n      font-size: 0.85em; }\n  section .login-form form .btn-default {\n      color: #0184d2; }\n  section .login-form form .btn.google-login {\n      background-color: #f92f25;\n      border: solid 1px #f92f25; }\n  section .login-form form .btn.google-login:hover {\n      background-color: #fff;\n      color: #f92f25; }\n  section .login-form form .btn.google-login:hover i {\n        color: #f92f25; }\n"
 
 /***/ }),
 
@@ -1315,6 +1351,7 @@ module.exports = "section {\n  height: 100%;\n  background-color: #fff; }\n  sec
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__firebase_service__ = __webpack_require__("./src/app/firebase.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_angularfire2_database__ = __webpack_require__("./node_modules/angularfire2/database/index.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_angularfire2_database___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_angularfire2_database__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__profile_service__ = __webpack_require__("./src/app/profile.service.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -1330,13 +1367,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
+
 var LoginComponent = /** @class */ (function () {
-    function LoginComponent(authService, cookieService, router, firebaseService, firebaseDB) {
+    function LoginComponent(authService, cookieService, router, firebaseService, firebaseDB, ps) {
         this.authService = authService;
         this.cookieService = cookieService;
         this.router = router;
         this.firebaseService = firebaseService;
         this.firebaseDB = firebaseDB;
+        this.ps = ps;
         this.log_data = undefined;
         this.titleTab1 = undefined;
         this.titleTab2 = undefined;
@@ -1349,7 +1388,8 @@ var LoginComponent = /** @class */ (function () {
         this.sendText = undefined;
         this.log = undefined;
         this.texts = undefined;
-        this.language = "en";
+        this.language = undefined;
+        this.language = navigator.language.split("-")[0] !== undefined ? navigator.language.split("-")[0] : "en";
     }
     LoginComponent.prototype.ngOnInit = function () {
         this.getCokkie("accessToken");
@@ -1390,6 +1430,11 @@ var LoginComponent = /** @class */ (function () {
                     localStorage.setItem("mail", data.email);
                     localStorage.setItem("accessToken", data.stsTokenManager.accessToken);
                     this.cookieService.put('accessToken', data.stsTokenManager.accessToken);
+                    if (data.lang === undefined) {
+                        data.lang = navigator.language.split("-")[0];
+                        localStorage.setItem("lang", data.lang);
+                        this.ps.updateProfile(data);
+                    }
                     this.router.navigate(['']);
                     this.log = undefined;
                 }
@@ -1397,12 +1442,20 @@ var LoginComponent = /** @class */ (function () {
                     localStorage.setItem("mail", data.email);
                     localStorage.setItem("accessToken", data.uid);
                     this.cookieService.put('accessToken', data.uid);
+                    if (data.lang === undefined) {
+                        data.lang = navigator.language.split("-")[0];
+                        localStorage.setItem("lang", data.lang);
+                        this.ps.updateProfile(data);
+                    }
                     this.router.navigate(['']);
                     this.log = undefined;
                 }
                 else {
                     this.setLog(data.code);
                 }
+            }
+            else {
+                this.setLog(this.log_data.code);
             }
         }
     };
@@ -1425,6 +1478,9 @@ var LoginComponent = /** @class */ (function () {
                 break;
             case "auth/recovery-false":
                 this.log = "Su correo no se encuentra registrado";
+                break;
+            case "auth/user-not-found":
+                this.log = "Este correo no se encuentra registrado";
                 break;
             default:
                 // code...
@@ -1513,7 +1569,8 @@ var LoginComponent = /** @class */ (function () {
             __WEBPACK_IMPORTED_MODULE_2_angular2_cookie_core__["CookieService"],
             __WEBPACK_IMPORTED_MODULE_3__angular_router__["b" /* Router */],
             __WEBPACK_IMPORTED_MODULE_4__firebase_service__["a" /* FirebaseService */],
-            __WEBPACK_IMPORTED_MODULE_5_angularfire2_database__["AngularFireDatabase"]])
+            __WEBPACK_IMPORTED_MODULE_5_angularfire2_database__["AngularFireDatabase"],
+            __WEBPACK_IMPORTED_MODULE_6__profile_service__["a" /* ProfileService */]])
     ], LoginComponent);
     return LoginComponent;
 }());
@@ -1696,8 +1753,9 @@ var MyTasksComponent = /** @class */ (function () {
         this.show = undefined;
         this.hide = undefined;
         this.texts = undefined;
-        this.language = "en";
+        this.language = undefined;
         this.user_mail = localStorage.getItem("mail");
+        this.language = localStorage.getItem("lang");
     }
     MyTasksComponent.prototype.ngOnInit = function () {
         this.getFolders();
@@ -1935,8 +1993,9 @@ var ProfileComponent = /** @class */ (function () {
         this.title = undefined;
         this.btnSave = undefined;
         this.texts = undefined;
-        this.language = "en";
+        this.language = undefined;
         this.mail = localStorage.getItem("mail");
+        this.language = localStorage.getItem("lang");
         pf.getProfile(this.mail).subscribe(function (data) {
             _this.profile = data;
         });
@@ -2035,7 +2094,8 @@ var StoreDetailComponent = /** @class */ (function () {
         this.images = undefined;
         this.description = undefined;
         this.texts = undefined;
-        this.language = "en";
+        this.language = undefined;
+        this.language = localStorage.getItem("lang");
     }
     StoreDetailComponent.prototype.ngOnInit = function () {
         console.log(this.extension);
@@ -2140,7 +2200,8 @@ var StoreComponent = /** @class */ (function () {
         this.firebaseDB = firebaseDB;
         this.selectedExtension = undefined;
         this.texts = undefined;
-        this.language = "en";
+        this.language = undefined;
+        this.language = localStorage.getItem("lang");
     }
     StoreComponent.prototype.ngOnInit = function () {
         this.getExtensions();
@@ -2242,7 +2303,7 @@ var TaskDetailComponent = /** @class */ (function () {
         this.task_expiration_label = "Vencimiento";
         this.task_alert_label = "Alerta";
         this.texts = undefined;
-        this.language = "en";
+        this.language = undefined;
         this.min = new Date();
         this.sub_task_name = '';
         this.dear = undefined;
@@ -2254,6 +2315,7 @@ var TaskDetailComponent = /** @class */ (function () {
         this.alertDate = undefined;
         this.note = undefined;
         this.newSubTaskText = undefined;
+        this.language = localStorage.getItem("lang");
         dateTimeAdapter.setLocale('es');
     }
     TaskDetailComponent.prototype.ngOnInit = function () {
@@ -2621,7 +2683,8 @@ var TaskListComponent = /** @class */ (function () {
         this.emptyFolder = undefined;
         this.phAddTask = undefined;
         this.texts = undefined;
-        this.language = "en";
+        this.language = undefined;
+        this.language = localStorage.getItem("lang");
         this.user_mail = localStorage.getItem("mail");
     }
     TaskListComponent.prototype.ngOnChanges = function (changes) {
@@ -3050,7 +3113,8 @@ var TracingComponent = /** @class */ (function () {
         this.execution = undefined;
         this.expirated = undefined;
         this.texts = undefined;
-        this.language = "en";
+        this.language = undefined;
+        this.language = localStorage.getItem("lang");
     }
     TracingComponent.prototype.ngOnInit = function () {
         this.title = this.route.snapshot.data.title;
