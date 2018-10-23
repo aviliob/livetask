@@ -413,8 +413,11 @@ var AuthService = /** @class */ (function () {
     };
     AuthService.prototype.getDefaultLang = function () {
         var navLanguage = navigator.language.split("-")[0] !== undefined ? navigator.language.split("-")[0] : "en";
-        this.firebaseDB.list('/text/list_language').valueChanges().subscribe(function (data) {
-            console.log("lang pepe", data); //here
+        var res = this.firebaseDB.list('/text/list_language').valueChanges();
+        res.subscribe(function (langList) {
+            if (!(langList.find(function (lang) { return lang.code == navLanguage; }))) {
+                navLanguage = "en";
+            }
         });
         return navLanguage;
     };
@@ -1384,6 +1387,13 @@ var LoginComponent = /** @class */ (function () {
         this.phName = undefined;
         this.recoverPass = undefined;
         this.btnGoogle = undefined;
+        this.signError1 = undefined;
+        this.signError2 = undefined;
+        this.signError3 = undefined;
+        this.signError4 = undefined;
+        this.signError5 = undefined;
+        this.signError6 = undefined;
+        this.info1 = undefined;
         this.register = false;
         this.sendText = undefined;
         this.log = undefined;
@@ -1416,6 +1426,13 @@ var LoginComponent = /** @class */ (function () {
             _this.recoverPass = k.find(function (f) { return f.name == "login_footer_forgetpass"; }).description[lang];
             _this.sendText = k.find(function (f) { return f.name == "login_button_send"; }).description[lang];
             _this.btnGoogle = k.find(function (f) { return f.name == "login_button_google"; }).description[lang];
+            _this.signError1 = k.find(function (f) { return f.name == "login_sign_error_1"; }).description[lang];
+            _this.signError2 = k.find(function (f) { return f.name == "login_sign_error_2"; }).description[lang];
+            _this.signError3 = k.find(function (f) { return f.name == "login_sign_error_3"; }).description[lang];
+            _this.signError4 = k.find(function (f) { return f.name == "login_sign_error_4"; }).description[lang];
+            _this.signError5 = k.find(function (f) { return f.name == "login_sign_error_5"; }).description[lang];
+            _this.signError6 = k.find(function (f) { return f.name == "login_forget_errormessage"; }).description[lang];
+            _this.info1 = k.find(function (f) { return f.name == "login_forget_sendmessage"; }).description[lang];
         });
     };
     LoginComponent.prototype.getCokkie = function (name) {
@@ -1462,25 +1479,25 @@ var LoginComponent = /** @class */ (function () {
     LoginComponent.prototype.setLog = function (code) {
         switch (code) {
             case "auth/invalid-email":
-                this.log = "E-mail inválido.";
+                this.log = this.signError2;
                 break;
             case "auth/wrong-password":
-                this.log = "Contraseña inválida o no ingresada.";
+                this.log = this.signError5;
                 break;
             case "auth/weak-password":
-                this.log = "Contraseña debil";
+                this.log = this.signError1;
                 break;
             case "auth/email-already-in-use":
-                this.log = "E-mail en uso";
+                this.log = this.signError4;
                 break;
             case "auth/recovery-true":
-                this.log = "Se envio un email de validación";
+                this.log = this.info1;
                 break;
             case "auth/recovery-false":
-                this.log = "Su correo no se encuentra registrado";
+                this.log = this.signError6;
                 break;
             case "auth/user-not-found":
-                this.log = "Este correo no se encuentra registrado";
+                this.log = this.signError3;
                 break;
             default:
                 // code...
@@ -2047,7 +2064,7 @@ var ProfileComponent = /** @class */ (function () {
 /***/ "./src/app/store-detail/store-detail.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"mc2-col flex-column w-100\">\r\n\t<div class=\"option-row row-mc2 d-flex\">\r\n\t\t<div class=\"left-content\">\r\n\t\t\t<img [src]=\"extension.logoImg\">\r\n\t\t</div>\r\n\t\t<div class=\"center-content d-flex flex-column justify-content-center\">\r\n\t\t\t <span class=\"name\">{{groups}}</span>\r\n\t\t\t <span class=\"price\">{{free}}</span>\r\n\t\t</div>\r\n\t\t<div class=\"right-content d-flex align-items-center\">\r\n\t\t\t<label class=\"install-btn\" (click)=\"registerUser()\" *ngIf=\"isInstalled;else uninstallBtn\">{{install}}</label>\r\n\t\t\t<ng-template #uninstallBtn>\r\n\t\t\t\t<a class=\"install-btn\" [routerLink]=\"['/extension',extension.id]\">{{open}}</a>\r\n\t\t\t</ng-template>\r\n\t\t</div>\r\n\t</div>\r\n\t<div class=\"images-row row-mc2 d-flex flex-column\">\r\n\t\t<h4>{{images}}</h4>\r\n\t\t<div class=\"carousel-content\">\r\n\t\t\t<ul class=\"list-unstyled carousel\">\r\n\t\t\t\t<li *ngFor=\"let item of extension.carousel\" ><img [src]=\"item.image\"></li>\r\n\t\t\t</ul>\r\n\t\t</div>\r\n\t</div>\r\n\t<div class=\"description-row row-mc2 d-flex\">\r\n\t\t<div class=\"d-flex flex-column\">\r\n\t\t\t<h4>{{description}}</h4>\r\n\t\t\t<p>{{extension.longDesc}}</p>\r\n\t\t</div>\r\n\t</div>\r\n</div>"
+module.exports = "<div class=\"mc2-col flex-column w-100\">\r\n\t<div class=\"option-row row-mc2 d-flex\">\r\n\t\t<div class=\"left-content\">\r\n\t\t\t<img [src]=\"extension.logoImg\">\r\n\t\t</div>\r\n\t\t<div class=\"center-content d-flex flex-column justify-content-center\">\r\n\t\t\t <span class=\"name\">{{groups}}</span>\r\n\t\t\t <span class=\"price\">{{free}}</span>\r\n\t\t</div>\r\n\t\t<div class=\"right-content d-flex align-items-center\">\r\n\t\t\t<label class=\"install-btn\" (click)=\"registerUser()\" *ngIf=\"isInstalled;else uninstallBtn\">{{install}}</label>\r\n\t\t\t<ng-template #uninstallBtn>\r\n\t\t\t\t<a class=\"install-btn\" [routerLink]=\"['/extension',extension.id]\">{{open}}</a>\r\n\t\t\t</ng-template>\r\n\t\t</div>\r\n\t</div>\r\n\t<div class=\"images-row row-mc2 d-flex flex-column\">\r\n\t\t<h4>{{images}}</h4>\r\n\t\t<div class=\"carousel-content\">\r\n\t\t\t<ul class=\"list-unstyled carousel\">\r\n\t\t\t\t<li *ngFor=\"let item of extension.carousel\" ><img [src]=\"item.image\"></li>\r\n\t\t\t</ul>\r\n\t\t</div>\r\n\t</div>\r\n\t<div class=\"description-row row-mc2 d-flex\">\r\n\t\t<div class=\"d-flex flex-column\">\r\n\t\t\t<h4>{{description}}</h4>\r\n\t\t\t<p>{{extension.longDesc[language]}}</p>\r\n\t\t</div>\r\n\t</div>\r\n</div>"
 
 /***/ }),
 
@@ -2156,7 +2173,7 @@ var StoreDetailComponent = /** @class */ (function () {
 /***/ "./src/app/store/store.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<header class=\"main-header d-flex justify-content-center align-items-center\">\r\n\t<label *ngIf=\"selectedExtension\" class=\"toBack-btn\" (click)=\"toBack()\"><i class=\"fa fa-angle-left\"></i></label>\r\n\t<h2 [innerText]=\"title\"></h2>\r\n</header>\r\n<section>\r\n\t<ng-template #extensionList>\r\n\t\t<ul class=\"d-flex w-100 h-100\">\r\n\t\t\t<li *ngFor=\"let ext of extensions\" class=\"d-flex\">\r\n\t\t\t\t<div class=\"li-content d-flex w-100 h-100\" (click)=\"showAppDetail(ext)\">\r\n\t\t\t\t\t<div class=\"d-flex li-left\">\r\n\t\t\t\t\t\t<img [src]=\"ext.logoImg\">\r\n\t\t\t\t\t</div>\r\n\t\t\t\t\t<div class=\"li-center d-flex flex-column\">\r\n\t\t\t\t\t\t<span class=\"name\">{{ext.name.es}}\t</span>\r\n\t\t\t\t\t\t<span class=\"shortDesc\">{{ext.shortDesc}}</span>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t\t<div class=\"li-right d-flex\">\r\n\t\t\t\t\t\t<label class=\"price\" *ngIf=\"isFree(ext);else isPayed\">Free</label>\r\n\t\t\t\t\t\t<ng-template>\r\n\t\t\t\t\t\t\t<label class=\"price\" #isPayed>$USD {{ext.price}}</label>\r\n\t\t\t\t\t\t</ng-template>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t</li>\r\n\t\t</ul>\r\n\t</ng-template>\r\n\t<app-store-detail *ngIf=\"selectedExtension;else extensionList\" [extension]=\"selectedExtension\" [userExtensions]=\"user_extensions\"></app-store-detail>\r\n</section>"
+module.exports = "<header class=\"main-header d-flex justify-content-center align-items-center\">\r\n\t<label *ngIf=\"selectedExtension\" class=\"toBack-btn\" (click)=\"toBack()\"><i class=\"fa fa-angle-left\"></i></label>\r\n\t<h2 [innerText]=\"title\"></h2>\r\n</header>\r\n<section>\r\n\t<ng-template #extensionList>\r\n\t\t<ul class=\"d-flex w-100 h-100\">\r\n\t\t\t<li *ngFor=\"let ext of extensions\" class=\"d-flex\">\r\n\t\t\t\t<div class=\"li-content d-flex w-100 h-100\" (click)=\"showAppDetail(ext)\">\r\n\t\t\t\t\t<div class=\"d-flex li-left\">\r\n\t\t\t\t\t\t<img [src]=\"ext.logoImg\">\r\n\t\t\t\t\t</div>\r\n\t\t\t\t\t<div class=\"li-center d-flex flex-column\">\r\n\t\t\t\t\t\t<span class=\"name\">{{ext.name.es}}\t</span>\r\n\t\t\t\t\t\t<span class=\"shortDesc\">{{ext.shortDesc[language]}}</span>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t\t<div class=\"li-right d-flex\">\r\n\t\t\t\t\t\t<label class=\"price\" *ngIf=\"isFree(ext);else isPayed\">Free</label>\r\n\t\t\t\t\t\t<ng-template>\r\n\t\t\t\t\t\t\t<label class=\"price\" #isPayed>$USD {{ext.price}}</label>\r\n\t\t\t\t\t\t</ng-template>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t</li>\r\n\t\t</ul>\r\n\t</ng-template>\r\n\t<app-store-detail *ngIf=\"selectedExtension;else extensionList\" [extension]=\"selectedExtension\" [userExtensions]=\"user_extensions\"></app-store-detail>\r\n</section>"
 
 /***/ }),
 
@@ -2300,8 +2317,8 @@ var TaskDetailComponent = /** @class */ (function () {
         this.firebaseDB = firebaseDB;
         this.passAction = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["EventEmitter"]();
         this.saveNewTask = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["EventEmitter"]();
-        this.task_expiration_label = "Vencimiento";
-        this.task_alert_label = "Alerta";
+        this.task_expiration_label = undefined;
+        this.task_alert_label = undefined;
         this.texts = undefined;
         this.language = undefined;
         this.min = new Date();
@@ -2316,7 +2333,7 @@ var TaskDetailComponent = /** @class */ (function () {
         this.note = undefined;
         this.newSubTaskText = undefined;
         this.language = localStorage.getItem("lang");
-        dateTimeAdapter.setLocale('es');
+        dateTimeAdapter.setLocale(this.language);
     }
     TaskDetailComponent.prototype.ngOnInit = function () {
         this.loadLanguage(this.language);
@@ -2682,6 +2699,9 @@ var TaskListComponent = /** @class */ (function () {
         this.btnDeleteTask = undefined;
         this.emptyFolder = undefined;
         this.phAddTask = undefined;
+        this.newTask = undefined;
+        this.taskCompleted = undefined;
+        this.taskCreated = undefined;
         this.texts = undefined;
         this.language = undefined;
         this.language = localStorage.getItem("lang");
@@ -2714,6 +2734,9 @@ var TaskListComponent = /** @class */ (function () {
             _this.btnDeleteTask = k.find(function (f) { return f.name == "myworks_taskslide_delete"; }).description[lang];
             _this.emptyFolder = k.find(function (f) { return f.name == "myworks_info"; }).description[lang];
             _this.phAddTask = k.find(function (f) { return f.name == "myworks_addtask"; }).description[lang];
+            _this.newTask = k.find(function (f) { return f.name == "newtask"; }).description[lang];
+            _this.taskCompleted = k.find(function (f) { return f.name == "task_completed"; }).description[lang];
+            _this.taskCreated = k.find(function (f) { return f.name == "task_created"; }).description[lang];
         });
     };
     TaskListComponent.prototype.sortTasks = function () {
@@ -2869,7 +2892,7 @@ var TaskListComponent = /** @class */ (function () {
         var from_mail = localStorage.getItem("mail");
         var id = localStorage.getItem("token") + '__' + Date.now();
         var key = id;
-        var name = 'Nueva Tarea';
+        var name = this.newTask;
         var parent_id = 0;
         var state = 'ACCEPTED';
         var updated = created;
@@ -2912,7 +2935,7 @@ var TaskListComponent = /** @class */ (function () {
             for (var i in _this.tasks) {
                 if (_this.tasks[i].key == task.key) {
                     _this.tasks[i] = task;
-                    _this.logService.emitChange("Tarea completada");
+                    _this.logService.emitChange(_this.taskCompleted);
                     break;
                 }
             }
@@ -2962,7 +2985,7 @@ var TaskListComponent = /** @class */ (function () {
         var task = { alert: alert, created: created, folder: folder, dear: dear, dear_mail: dear_mail, description: description, expiration: expiration, favorite: favorite, from: from, from_mail: from_mail, id: id, key: key, name: name, parent_id: parent_id, state: state, updated: updated, visible: visible };
         this.tasks.push(task);
         this.taskService.addTask(task).subscribe(function (task_r) {
-            _this.logService.emitChange("Tarea Creada");
+            _this.logService.emitChange(_this.taskCreated);
         });
     };
     __decorate([
