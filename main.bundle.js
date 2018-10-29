@@ -245,8 +245,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 
 
 var DefaultIntl = {
-    cancelBtnLabel: 'Cancelar',
-    setBtnLabel: 'Aceptar',
+    //look for a better way to do this
+    cancelBtnLabel: localStorage.getItem("lang") === "es" ? 'Cancelar' : "Cancel",
+    setBtnLabel: localStorage.getItem("lang") === "es" ? 'Aceptar' : "Accept",
     hour12AMLabel: 'AM',
     hour12PMLabel: 'PM',
 };
@@ -280,8 +281,8 @@ var AppModule = /** @class */ (function () {
                 __WEBPACK_IMPORTED_MODULE_6__app_routing_module__["a" /* AppRoutingModule */],
                 __WEBPACK_IMPORTED_MODULE_8__angular_common_http__["b" /* HttpClientModule */],
                 __WEBPACK_IMPORTED_MODULE_29__angular_forms__["a" /* FormsModule */],
-                __WEBPACK_IMPORTED_MODULE_2_ng_pick_datetime__["c" /* OwlDateTimeModule */],
-                __WEBPACK_IMPORTED_MODULE_2_ng_pick_datetime__["d" /* OwlNativeDateTimeModule */],
+                __WEBPACK_IMPORTED_MODULE_2_ng_pick_datetime__["d" /* OwlDateTimeModule */],
+                __WEBPACK_IMPORTED_MODULE_2_ng_pick_datetime__["e" /* OwlNativeDateTimeModule */],
                 __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser_animations__["a" /* BrowserAnimationsModule */],
                 __WEBPACK_IMPORTED_MODULE_14_angularfire2__["AngularFireModule"].initializeApp(__WEBPACK_IMPORTED_MODULE_16__environments_environment__["a" /* environment */].firebase, "livetask"),
                 __WEBPACK_IMPORTED_MODULE_15_angularfire2_database__["AngularFireDatabaseModule"]
@@ -294,7 +295,7 @@ var AppModule = /** @class */ (function () {
                 __WEBPACK_IMPORTED_MODULE_24__profile_service__["a" /* ProfileService */],
                 __WEBPACK_IMPORTED_MODULE_27__folder_service__["a" /* FolderService */],
                 __WEBPACK_IMPORTED_MODULE_28__task_service__["a" /* TaskService */],
-                { provide: __WEBPACK_IMPORTED_MODULE_2_ng_pick_datetime__["b" /* OwlDateTimeIntl */], useValue: DefaultIntl },
+                { provide: __WEBPACK_IMPORTED_MODULE_2_ng_pick_datetime__["c" /* OwlDateTimeIntl */], useValue: DefaultIntl },
                 __WEBPACK_IMPORTED_MODULE_32__extension_service__["a" /* ExtensionService */],
                 __WEBPACK_IMPORTED_MODULE_13__firebase_service__["a" /* FirebaseService */]
             ],
@@ -632,6 +633,8 @@ var FeedBackComponent = /** @class */ (function () {
         this.country = undefined;
         this.comment = undefined;
         this.btnSend = undefined;
+        this.sent = undefined;
+        this.sending = undefined;
         this.subject = undefined;
         this.texts = undefined;
         this.language = undefined;
@@ -644,13 +647,15 @@ var FeedBackComponent = /** @class */ (function () {
         var _this = this;
         this.texts = this.firebaseDB.list('/text/list_text/').valueChanges();
         this.texts.subscribe(function (k) {
-            _this.subtitle = k.find(function (f) { return f.name == "feedback_subject"; }).description[lang];
+            _this.subtitle = k.find(function (f) { return f.name == "feedback_info"; }).description[lang];
             _this.title = k.find(function (f) { return f.name == "feedback"; }).description[lang];
             _this.phone = k.find(function (f) { return f.name == "feedback_phone"; }).description[lang];
             _this.country = k.find(function (f) { return f.name == "feedback_country"; }).description[lang];
             _this.comment = k.find(function (f) { return f.name == "feedback_comment"; }).description[lang];
             _this.btnSend = k.find(function (f) { return f.name == "feedback_button_send"; }).description[lang];
             _this.subject = k.find(function (f) { return f.name == "feedback_subject"; }).description[lang];
+            _this.sent = k.find(function (f) { return f.name == "feedback_sent"; }).description[lang];
+            _this.sending = k.find(function (f) { return f.name == "feedback_sending"; }).description[lang];
         });
     };
     FeedBackComponent.prototype.enviarFormulario = function () {
@@ -663,11 +668,11 @@ var FeedBackComponent = /** @class */ (function () {
             user_mail: localStorage.getItem('mail')
         };
         this.stop = true;
-        this.ls.emitChange("Enviando Mensaje");
+        this.ls.emitChange(this.sending);
         this.ms.sendMail(msg).subscribe(function (res) {
             if (res['complete']) {
                 _this.cleanFields();
-                _this.ls.emitChange("Mensaje enviado");
+                _this.ls.emitChange(_this.sent);
             }
             console.log(res);
             _this.stop = false;
@@ -1172,7 +1177,7 @@ var InboxComponent = /** @class */ (function () {
         this.texts = undefined;
         this.language = undefined;
         this.showSelectDialog = false;
-        this.selectTitle = "Folder de destino";
+        this.selectTitle = undefined;
         this.user_mail = localStorage.getItem("mail");
         this.language = localStorage.getItem("lang");
     }
@@ -1192,6 +1197,7 @@ var InboxComponent = /** @class */ (function () {
             _this.noTasks1 = noTaskaux.split(/\n/g)[0];
             _this.noTasks2 = noTaskaux.split(/\n/g)[1];
             _this.title = k.find(function (f) { return f.name == "inbox"; }).description[lang];
+            _this.selectTitle = k.find(function (f) { return f.name == "inbox_dialog_title"; }).description[lang];
         });
     };
     InboxComponent.prototype.getTasks = function () {
@@ -1330,14 +1336,14 @@ var LogService = /** @class */ (function () {
 /***/ "./src/app/login/login.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<app-header-full></app-header-full>\r\n<main class=\"d-flex flex-column full-main\">\r\n\t\t\r\n\t<section class=\"main-content w-100 h-100\">\r\n\t\t\r\n\t\t<div class=\"w-100 h-100 d-flex justify-content-center align-items-center login-form container\" id=\"login\">\r\n\t\t\t<!--<form class=\"d-flex flex-column\" (submit)=\"auth($event,mail.value,pass.value,nameuser.value)\">-->\r\n\t\t\t<form class=\"d-flex flex-column\" (submit)=\"auth($event,mail.value,pass.value,nameuser.value)\">\r\n\t\t\t\t\t<div class=\"info-content w-100\">\r\n\t\t\t\t\t\t\t<p>Text</p>\r\n\t\t\t\t\t\t</div>\r\n\t\t\t\t\t\t<div class=\"info-content2 w-100\">\r\n\t\t\t\t\t\t\t<p>Text</p>\r\n\t\t\t\t\t\t</div>\r\n\t\t\t\t<div class=\"log-content w-100\">\r\n\t\t\t\t\t<p *ngIf=\"log\">{{log}}</p>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"form-header d-flex\">\r\n\t\t\t\t\t<div class=\"w-50 text-center active change-form login-btn\" (click)=\"changeFormType($event)\">\r\n\t\t\t\t\t\t<h3 class=\"mb-0 text-uppercase\">{{titleTab1}}</h3>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t\t<div class=\"w-50 text-center change-form register-btn\" (click)=\"changeFormType($event)\">\r\n\t\t\t\t\t\t<h3 class=\"mb-0 text-uppercase\">{{titleTab2}}</h3>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"form-body d-flex flex-column mb-0\">\r\n\t\t\t\t\t<input [ngClass]=\"{'d-none':!register}\" class=\"form-control mb-2\" type=\"text\" required=\"true\" placeholder=\"{{phName}}\" #nameuser>\r\n\t\t\t\t\t<input id=\"mail\" class=\"form-control mb-2\" type=\"email\" required=\"true\" placeholder=\"{{phMail}}\" #mail>\r\n\t\t\t\t\t<input type=\"password\" class=\"form-control\" required=\"true\" placeholder=\"{{phPass}}\" #pass>\r\n\t\t\t\t\t<div class=\"form-group d-flex flex-row-reverse mt-2\">\r\n\t\t\t\t\t\t<a [ngClass]=\"{'d-none':register}\" href=\"#\" (click)=\"recoveryPassword($event)\"><small>{{recoverPass}}</small></a>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"form-footer d-flex flex-column\">\r\n\t\t\t\t\t<div class=\"form-group d-flex flex-column mb-4\">\r\n\t\t\t\t\t\t<button type=\"submit\" class=\"btn btn-primary ml-1 w-100 mb-3\"><span>{{sendText}}</span></button>\r\n\t\t\t\t\t\t<button class=\"btn btn-primary google-login w-100 ml-1\" (click)=\"socialSignIn('google')\">\r\n\t\t\t\t\t\t\t<i class=\"fa fa-google-plus mr-2\"></i>\r\n\t\t\t\t\t\t\t{{btnGoogle}}\r\n\t\t\t\t\t\t</button>\r\n\t\t\t\t\t\t<!--\r\n\t\t\t\t\t\t<button class=\"btn btn-default\" (click)=\"changeFormType($event)\">Registrarme</button>\r\n\t\t\t\t\t\t<button class=\"btn btn-default\" (click)=\"registerUser($event,mail.value,pass.value)\">Registrarme</button>-->\r\n\t\t\t\t\t</div>\t\t\t\t\t\r\n\t\t\t\t</div>\r\n\t\t\t\t<!--\t\r\n\t\t\t\t    <div v-if=\"error != 0\">\r\n\t\t\t\t        {{ error }}\r\n\t\t\t\t    </div>\r\n\t\t\t\t-->\r\n\t\t\t\t\r\n\t\t\t</form>\r\n\t\t</div>\r\n\t</section>\r\n</main>"
+module.exports = "<app-header-full></app-header-full>\r\n<main class=\"d-flex flex-column full-main\">\r\n\t\t\r\n\t<section class=\"main-content w-100 h-100\">\r\n\t\t\r\n\t\t<div class=\"w-100 h-100 d-flex justify-content-center align-items-center login-form container\" id=\"login\">\r\n\t\t\t<!--<form class=\"d-flex flex-column\" (submit)=\"auth($event,mail.value,pass.value,nameuser.value)\">-->\r\n\t\t\t<form class=\"d-flex flex-column\" (submit)=\"auth($event,mail.value,pass.value,nameuser.value)\">\r\n\t\t\t\t\t<div class=\"info-content w-100\">\r\n\t\t\t\t\t\t\t<p>{{text_info1}}</p>\r\n\t\t\t\t\t\t</div>\r\n\t\t\t\t\t\t<div class=\"info-content2 w-100\">\r\n\t\t\t\t\t\t\t<p>{{text_info2}}</p>\r\n\t\t\t\t\t\t</div>\r\n\t\t\t\t<div class=\"log-content w-100\">\r\n\t\t\t\t\t<p *ngIf=\"log\">{{log}}</p>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"form-header d-flex\">\r\n\t\t\t\t\t<div class=\"w-50 text-center active change-form login-btn\" (click)=\"changeFormType($event)\">\r\n\t\t\t\t\t\t<h3 class=\"mb-0 text-uppercase\">{{titleTab1}}</h3>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t\t<div class=\"w-50 text-center change-form register-btn\" (click)=\"changeFormType($event)\">\r\n\t\t\t\t\t\t<h3 class=\"mb-0 text-uppercase\">{{titleTab2}}</h3>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"form-body d-flex flex-column mb-0\">\r\n\t\t\t\t\t<input [ngClass]=\"{'d-none':!register}\" class=\"form-control mb-2\" type=\"text\" required=\"true\" placeholder=\"{{phName}}\" #nameuser>\r\n\t\t\t\t\t<input id=\"mail\" class=\"form-control mb-2\" type=\"email\" required=\"true\" placeholder=\"{{phMail}}\" #mail>\r\n\t\t\t\t\t<input type=\"password\" class=\"form-control\" required=\"true\" placeholder=\"{{phPass}}\" #pass>\r\n\t\t\t\t\t<div class=\"form-group d-flex flex-row-reverse mt-2\">\r\n\t\t\t\t\t\t<a [ngClass]=\"{'d-none':register}\" href=\"#\" (click)=\"recoveryPassword($event)\"><small>{{recoverPass}}</small></a>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"form-footer d-flex flex-column\">\r\n\t\t\t\t\t<div class=\"form-group d-flex flex-column mb-4\">\r\n\t\t\t\t\t\t<button type=\"submit\" class=\"btn btn-primary ml-1 w-100 mb-3\"><span>{{sendText}}</span></button>\r\n\t\t\t\t\t\t<button class=\"btn btn-primary google-login w-100 ml-1\" (click)=\"socialSignIn('google')\">\r\n\t\t\t\t\t\t\t<i class=\"fa fa-google-plus mr-2\"></i>\r\n\t\t\t\t\t\t\t{{btnGoogle}}\r\n\t\t\t\t\t\t</button>\r\n\t\t\t\t\t\t<!--\r\n\t\t\t\t\t\t<button class=\"btn btn-default\" (click)=\"changeFormType($event)\">Registrarme</button>\r\n\t\t\t\t\t\t<button class=\"btn btn-default\" (click)=\"registerUser($event,mail.value,pass.value)\">Registrarme</button>-->\r\n\t\t\t\t\t</div>\t\t\t\t\t\r\n\t\t\t\t</div>\r\n\t\t\t\t<!--\t\r\n\t\t\t\t    <div v-if=\"error != 0\">\r\n\t\t\t\t        {{ error }}\r\n\t\t\t\t    </div>\r\n\t\t\t\t-->\r\n\t\t\t\t\r\n\t\t\t</form>\r\n\t\t</div>\r\n\t</section>\r\n</main>"
 
 /***/ }),
 
 /***/ "./src/app/login/login.component.scss":
 /***/ (function(module, exports) {
 
-module.exports = "section {\n  height: 100%;\n  background-color: #fff; }\n  section .info-content {\n    position: absolute;\n    top: -90px;\n    font-size: 0.9em;\n    color: #0184d2;\n    font-weight: 600;\n    text-align: center; }\n  section .info-content2 {\n    position: absolute;\n    bottom: -70px;\n    font-size: 0.9em;\n    color: #8eb4cb; }\n  section .info-content2 p {\n      text-align: center; }\n  section .login-form form {\n    position: relative;\n    width: 350px;\n    -webkit-box-shadow: 0 0 15px 0px rgba(0, 0, 0, 0.2);\n            box-shadow: 0 0 15px 0px rgba(0, 0, 0, 0.2); }\n  section .login-form form .log-content {\n      position: absolute;\n      top: -35px;\n      font-size: 0.9em;\n      color: #ffb500;\n      font-weight: 600;\n      text-align: center; }\n  section .login-form form .form-header div {\n      padding-top: 22px;\n      padding-bottom: 15px;\n      border-bottom: solid 3px #d2d2d2;\n      cursor: pointer; }\n  section .login-form form .form-header div h3 {\n        font-size: 1.01em;\n        font-weight: 600;\n        color: #d2d2d2;\n        margin-bottom: 15px; }\n  section .login-form form .form-header div.active {\n      border-bottom: solid 3px #499bd9; }\n  section .login-form form .form-header div.active h3 {\n        color: #0184d2; }\n  section .login-form form .form-body {\n      padding: 35px 40px 0px; }\n  section .login-form form .form-body input[type='text'].form-control, section .login-form form .form-body input[type='password'].form-control, section .login-form form .form-body input[type='email'].form-control {\n        border: 0;\n        background-color: #f2f2f2;\n        font-size: 0.8em;\n        border-radius: 5px;\n        padding: 10px 15px; }\n  section .login-form form .form-body small {\n        font-size: 0.75em;\n        font-style: italic;\n        margin-right: 5px;\n        font-weight: 500; }\n  section .login-form form .form-footer {\n      padding: 0px 40px; }\n  section .login-form form .btn {\n      display: -webkit-box;\n      display: -ms-flexbox;\n      display: flex;\n      -webkit-box-pack: center;\n      -ms-flex-pack: center;\n      justify-content: center;\n      -webkit-box-align: center;\n      -ms-flex-align: center;\n      align-items: center;\n      width: 120px;\n      height: 50px;\n      font-size: 0.85em; }\n  section .login-form form .btn-default {\n      color: #0184d2; }\n  section .login-form form .btn.google-login {\n      background-color: #f92f25;\n      border: solid 1px #f92f25; }\n  section .login-form form .btn.google-login:hover {\n      background-color: #fff;\n      color: #f92f25; }\n  section .login-form form .btn.google-login:hover i {\n        color: #f92f25; }\n"
+module.exports = "section {\n  height: 100%;\n  background-color: #fff; }\n  section .info-content {\n    position: absolute;\n    top: -110px;\n    font-size: 0.9em;\n    color: #0184d2;\n    font-weight: 600;\n    text-align: center; }\n  section .info-content2 {\n    position: absolute;\n    bottom: -70px;\n    font-size: 0.9em;\n    color: #8eb4cb; }\n  section .info-content2 p {\n      text-align: center; }\n  section .login-form form {\n    position: relative;\n    width: 350px;\n    -webkit-box-shadow: 0 0 15px 0px rgba(0, 0, 0, 0.2);\n            box-shadow: 0 0 15px 0px rgba(0, 0, 0, 0.2); }\n  section .login-form form .log-content {\n      position: absolute;\n      top: -50px;\n      font-size: 0.9em;\n      color: #ffb500;\n      font-weight: 600;\n      text-align: center; }\n  section .login-form form .form-header div {\n      padding-top: 22px;\n      padding-bottom: 15px;\n      border-bottom: solid 3px #d2d2d2;\n      cursor: pointer; }\n  section .login-form form .form-header div h3 {\n        font-size: 1.01em;\n        font-weight: 600;\n        color: #d2d2d2;\n        margin-bottom: 15px; }\n  section .login-form form .form-header div.active {\n      border-bottom: solid 3px #499bd9; }\n  section .login-form form .form-header div.active h3 {\n        color: #0184d2; }\n  section .login-form form .form-body {\n      padding: 35px 40px 0px; }\n  section .login-form form .form-body input[type='text'].form-control, section .login-form form .form-body input[type='password'].form-control, section .login-form form .form-body input[type='email'].form-control {\n        border: 0;\n        background-color: #f2f2f2;\n        font-size: 0.8em;\n        border-radius: 5px;\n        padding: 10px 15px; }\n  section .login-form form .form-body small {\n        font-size: 0.75em;\n        font-style: italic;\n        margin-right: 5px;\n        font-weight: 500; }\n  section .login-form form .form-footer {\n      padding: 0px 40px; }\n  section .login-form form .btn {\n      display: -webkit-box;\n      display: -ms-flexbox;\n      display: flex;\n      -webkit-box-pack: center;\n      -ms-flex-pack: center;\n      justify-content: center;\n      -webkit-box-align: center;\n      -ms-flex-align: center;\n      align-items: center;\n      width: 120px;\n      height: 50px;\n      font-size: 0.85em; }\n  section .login-form form .btn-default {\n      color: #0184d2; }\n  section .login-form form .btn.google-login {\n      background-color: #f92f25;\n      border: solid 1px #f92f25; }\n  section .login-form form .btn.google-login:hover {\n      background-color: #fff;\n      color: #f92f25; }\n  section .login-form form .btn.google-login:hover i {\n        color: #f92f25; }\n"
 
 /***/ }),
 
@@ -1394,6 +1400,8 @@ var LoginComponent = /** @class */ (function () {
         this.signError5 = undefined;
         this.signError6 = undefined;
         this.info1 = undefined;
+        this.text_info1 = undefined;
+        this.text_info2 = undefined;
         this.register = false;
         this.sendText = undefined;
         this.log = undefined;
@@ -1433,6 +1441,8 @@ var LoginComponent = /** @class */ (function () {
             _this.signError5 = k.find(function (f) { return f.name == "login_sign_error_5"; }).description[lang];
             _this.signError6 = k.find(function (f) { return f.name == "login_forget_errormessage"; }).description[lang];
             _this.info1 = k.find(function (f) { return f.name == "login_forget_sendmessage"; }).description[lang];
+            _this.text_info1 = k.find(function (f) { return f.name == "login_info_1"; }).description[lang];
+            _this.text_info2 = k.find(function (f) { return f.name == "login_info_2"; }).description[lang];
         });
     };
     LoginComponent.prototype.getCokkie = function (name) {
@@ -1769,6 +1779,8 @@ var MyTasksComponent = /** @class */ (function () {
         this.completed = undefined;
         this.show = undefined;
         this.hide = undefined;
+        this.task_created = undefined;
+        this.task_sent = undefined;
         this.texts = undefined;
         this.language = undefined;
         this.user_mail = localStorage.getItem("mail");
@@ -1792,6 +1804,8 @@ var MyTasksComponent = /** @class */ (function () {
             _this.hide = k.find(function (f) { return f.name == "filter_completed_hide"; }).description[lang];
             _this.show = k.find(function (f) { return f.name == "filter_completed_show"; }).description[lang];
             _this.title = k.find(function (f) { return f.name == "task"; }).description[lang];
+            _this.task_created = k.find(function (f) { return f.name == "task_created"; }).description[lang];
+            _this.task_sent = k.find(function (f) { return f.name == "task_sent"; }).description[lang];
         });
     };
     MyTasksComponent.prototype.getFolders = function () {
@@ -1849,10 +1863,10 @@ var MyTasksComponent = /** @class */ (function () {
             }
             this.taskService.addTask(event.tasks[i]).subscribe(function (task_r) {
                 if (task_r.dear_mail == task_r.from_mail) {
-                    _this.logService.emitChange("Tarea Creada");
+                    _this.logService.emitChange(_this.task_created);
                 }
                 else {
-                    _this.logService.emitChange("Tarea Enviada");
+                    _this.logService.emitChange(_this.task_sent);
                 }
             });
         }
@@ -2009,6 +2023,7 @@ var ProfileComponent = /** @class */ (function () {
         this.firebaseDB = firebaseDB;
         this.title = undefined;
         this.btnSave = undefined;
+        this.profile_updated = undefined;
         this.texts = undefined;
         this.language = undefined;
         this.mail = localStorage.getItem("mail");
@@ -2026,12 +2041,13 @@ var ProfileComponent = /** @class */ (function () {
         this.texts.subscribe(function (k) {
             _this.title = k.find(function (f) { return f.name == "myprofile"; }).description[lang];
             _this.btnSave = k.find(function (f) { return f.name == "myprofile_save"; }).description[lang];
+            _this.profile_updated = k.find(function (f) { return f.name == "myprofile_save_data"; }).description[lang];
         });
     };
     ProfileComponent.prototype.saveProfile = function () {
         var _this = this;
         this.pf.updateProfile(this.profile).subscribe(function (response) {
-            _this.ls.emitChange("Perfil actualizado");
+            _this.ls.emitChange(_this.profile_updated);
         });
     };
     ProfileComponent.prototype.changeImg = function (e) {
@@ -2308,6 +2324,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+
 
 
 
@@ -2629,7 +2646,10 @@ var TaskDetailComponent = /** @class */ (function () {
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
             selector: 'app-task-detail',
             template: __webpack_require__("./src/app/task-detail/task-detail.component.html"),
-            styles: [__webpack_require__("./src/app/task-detail/task-detail.component.scss")]
+            styles: [__webpack_require__("./src/app/task-detail/task-detail.component.scss")],
+            providers: [
+                { provide: __WEBPACK_IMPORTED_MODULE_2_ng_pick_datetime__["b" /* OWL_DATE_TIME_LOCALE */], useValue: 'en' }
+            ],
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_2_ng_pick_datetime__["a" /* DateTimeAdapter */],
             __WEBPACK_IMPORTED_MODULE_3_angularfire2_database__["AngularFireDatabase"]])
@@ -3087,7 +3107,7 @@ var TaskService = /** @class */ (function () {
 /***/ "./src/app/tracing/tracing.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<header class=\"main-header d-flex justify-content-center align-items-center\">\r\n\t<h2 [innerText]=\"title\"></h2>\r\n</header>\r\n<section class=\"main-content d-flex\">\r\n\t<div class=\"w-100 h-100 d-flex flex-column\">\r\n        <!-- Tab nav -->\r\n        <ul class=\"nav nav-tabs folder-tabs lt-tabs\">\r\n            <li class=\"nav-item w-50\" >\r\n                <a id=\"activas-tab\" class=\"nav-link active text-center\" data-toggle=\"tab\" href=\"#activas\" role=\"tab\" aria-controls=\"activas\" aria-selected=\"true\">{{actives}}</a>\r\n            </li>\r\n            <li class=\"nav-item w-50\" >\r\n                <a id=\"por-aceptar-tab\" class=\"nav-link text-center\" data-toggle=\"tab\" href=\"#por-aceptar\" role=\"tab\" aria-controls=\"por-aceptar\" aria-selected=\"true\">{{accept}}</a>\r\n            </li>\r\n        </ul>\r\n        <!-- Tab panes -->\r\n        <div class=\"tab-content\">\r\n                <div class=\"tab-pane active\" id=\"activas\" role=\"tabpanel\" aria-labelledby=\"activas-tab\">\r\n                    <ul class=\"list-unstyled\">\r\n                        <template *ngFor=\"let task of tasks\">\r\n                            <li *ngIf=\"belognsActive(task)\" (click)=\"selectTasks(task)\">\r\n                                <div class=\"li-content d-flex\">\r\n                                    <div class=\"li-left d-flex align-items-center justify-content-center\">\r\n                                        <i class=\"fa fa-fw fa-circle\" [ngClass]=\"getStateClass(task)\" ></i>\r\n                                    </div>\r\n                                    <div class=\"li-main d-flex align-items-center\">\r\n                                        <label class=\"m-0\">{{task.name}}</label>\r\n                                    </div>\r\n                                    <div class=\"li-right ml-auto mr-0 align-items-center d-none d-md-flex\">\r\n                                        <div class=\"d-flex graph\">\r\n                                            <template *ngFor=\"let sub_task of sonTasks(task);index as idx\" class=\"w-100 h-100\">\r\n                                                <div class=\"w-100 h-100\" [ngClass]=\"getStateClass(sub_task)\"></div>\r\n                                            </template>\r\n                                        </div>\r\n                                        <label *ngIf=\"hasFromName(task);else noHasTaskName\" class=\"m-0\">{{task.from.name}}</label>\r\n                                        <ng-template #noHasTaskName>\r\n                                            <label class=\"m-0\">{{task.from_mail}}</label>\r\n                                        </ng-template>\r\n                                    </div>\r\n                                </div>\r\n                            </li>\r\n                        </template>\r\n                    </ul>\r\n                </div>\r\n                <div class=\"tab-pane\" id=\"por-aceptar\" role=\"tabpanel\" aria-labelledby=\"por-aceptar-tab\">\r\n                    <ul class=\"list-unstyled\">\r\n                        <template *ngFor=\"let task of tasks\">\r\n                            <li *ngIf=\"belognsUnaccepted(task)\">\r\n                                <div class=\"li-content d-flex\" v-on:click=\"showSubTasks($event)\">\r\n                                    <div class=\"li-main d-flex align-items-center\">\r\n                                        <label class=\"m-0\">{{task.name}}</label>\r\n                                    </div>\r\n                                    <div class=\"li-right ml-auto mr-0 d-flex align-items-center d-none d-md-block\">\r\n                                        <div class=\"d-flex flex-column\">\r\n                                            <label *ngIf=\"hasFromName(task);else tpltaskmail\" class=\"m-0\">{{task.from.name}}</label>\r\n                                            <ng-template #tpltaskmail class=\"m-0\">{{task.from_mail}}</ng-template>\r\n                                            <label class=\"m-0 text-right\">Pendiente de aceptación</label>\r\n                                        </div>\r\n                                    </div>\r\n                                </div>\r\n                                <div class=\"ul-container\">\r\n                                    <ul class=\"list-unstyled\">\r\n                                        <li v-for=\"(sub_task, index) in tasks\" v-if=\"task.id == sub_task.parent_id\">\r\n                                            <div class=\"li-content d-flex\">\r\n                                                <div class=\"li-left d-flex justify-content-center align-items-center\">\r\n                                                    <i class=\"fa fa-fw fa-circle\" v-bind:class=\"{'acepted-state': task.state == 'ACCEPTED','complete-state':task.state == 'COMPLETE', 'expirate-state':task.state == 'EXPIRATE'}\"></i>\r\n                                                </div>\r\n                                                <div class=\"li-main d-flex align-items-center\">\r\n                                                    <label class=\"m-0\">sub_task.name</label>\r\n                                                </div>\r\n                                                <div class=\"li-right\"></div>\r\n                                            </div>\r\n                                        </li>\r\n                                    </ul>\r\n                                </div>\r\n                            </li>\r\n                        </template>\r\n                    </ul>\r\n                </div>\r\n        </div>\r\n        <div class=\"tracing-legend mt-auto mb-0\">\r\n            <ul class=\"list-unstyled d-flex flex-column flex-sm-row align-items-center justify-content-center\">\r\n                <li><i class=\"fa fa-fw fa-circle complete-legend mr-1\"></i>{{completed}}</li>\r\n                <li class=\"ml-5 mr-5\"><i class=\"fa fa-fw fa-circle exec-legend mr-1\"></i>{{execution}}</li>\r\n                <li><i class=\"fa fa-fw fa-circle timed-out-legend mr-1\"></i>{{expirated}}</li>\r\n            </ul>\r\n        </div>\r\n    </div>\r\n    <div class=\"separator d-none d-md-block\" *ngIf=\"selectedTask\"></div>\r\n    <div class=\"w-100 h-100 d-flex flex-column\" *ngIf=\"selectedTask\">\r\n        <app-task-detail  [type]=\"selectedType\" [task]=\"selectedTask\" (saveNewTask)=\"saveNewTask($event)\" (passAction)=\"execAction($event)\" [tasks]=\"selectedTaskSons\" class=\"show_pane w-100 h-100 flex-column\"></app-task-detail>\r\n    </div>\r\n</section>\r\n"
+module.exports = "<header class=\"main-header d-flex justify-content-center align-items-center\">\r\n\t<h2 [innerText]=\"title\"></h2>\r\n</header>\r\n<section class=\"main-content d-flex\">\r\n\t<div class=\"w-100 h-100 d-flex flex-column\">\r\n        <!-- Tab nav -->\r\n        <ul class=\"nav nav-tabs folder-tabs lt-tabs\">\r\n            <li class=\"nav-item w-50\" >\r\n                <a id=\"activas-tab\" class=\"nav-link active text-center\" data-toggle=\"tab\" href=\"#activas\" role=\"tab\" aria-controls=\"activas\" aria-selected=\"true\">{{actives}}</a>\r\n            </li>\r\n            <li class=\"nav-item w-50\" >\r\n                <a id=\"por-aceptar-tab\" class=\"nav-link text-center\" data-toggle=\"tab\" href=\"#por-aceptar\" role=\"tab\" aria-controls=\"por-aceptar\" aria-selected=\"true\">{{accept}}</a>\r\n            </li>\r\n        </ul>\r\n        <!-- Tab panes -->\r\n        <div class=\"tab-content\">\r\n                <div class=\"tab-pane active\" id=\"activas\" role=\"tabpanel\" aria-labelledby=\"activas-tab\">\r\n                    <ul class=\"list-unstyled\">\r\n                        <template *ngFor=\"let task of tasks\">\r\n                            <li *ngIf=\"belognsActive(task)\" (click)=\"selectTasks(task)\">\r\n                                <div class=\"li-content d-flex\">\r\n                                    <div class=\"li-left d-flex align-items-center justify-content-center\">\r\n                                        <i class=\"fa fa-fw fa-circle\" [ngClass]=\"getStateClass(task)\" ></i>\r\n                                    </div>\r\n                                    <div class=\"li-main d-flex align-items-center\">\r\n                                        <label class=\"m-0\">{{task.name}}</label>\r\n                                    </div>\r\n                                    <div class=\"li-right ml-auto mr-0 align-items-center d-none d-md-flex\">\r\n                                        <div class=\"d-flex graph\">\r\n                                            <template *ngFor=\"let sub_task of sonTasks(task);index as idx\" class=\"w-100 h-100\">\r\n                                                <div class=\"w-100 h-100\" [ngClass]=\"getStateClass(sub_task)\"></div>\r\n                                            </template>\r\n                                        </div>\r\n                                        <label *ngIf=\"hasFromName(task);else noHasTaskName\" class=\"m-0\">{{task.from.name}}</label>\r\n                                        <ng-template #noHasTaskName>\r\n                                            <label class=\"m-0\">{{task.from_mail}}</label>\r\n                                        </ng-template>\r\n                                    </div>\r\n                                </div>\r\n                            </li>\r\n                        </template>\r\n                    </ul>\r\n                </div>\r\n                <div class=\"tab-pane\" id=\"por-aceptar\" role=\"tabpanel\" aria-labelledby=\"por-aceptar-tab\">\r\n                    <ul class=\"list-unstyled\">\r\n                        <template *ngFor=\"let task of tasks\">\r\n                            <li *ngIf=\"belognsUnaccepted(task)\">\r\n                                <div class=\"li-content d-flex\" v-on:click=\"showSubTasks($event)\">\r\n                                    <div class=\"li-main d-flex align-items-center\">\r\n                                        <label class=\"m-0\">{{task.name}}</label>\r\n                                    </div>\r\n                                    <div class=\"li-right ml-auto mr-0 d-flex align-items-center d-none d-md-block\">\r\n                                        <div class=\"d-flex flex-column\">\r\n                                            <label *ngIf=\"hasFromName(task);else tpltaskmail\" class=\"m-0\">{{task.from.name}}</label>\r\n                                            <ng-template #tpltaskmail class=\"m-0\">{{task.from_mail}}</ng-template>\r\n                                            <label class=\"m-0 text-right\">{{task_state_send}}</label>\r\n                                        </div>\r\n                                    </div>\r\n                                </div>\r\n                                <div class=\"ul-container\">\r\n                                    <ul class=\"list-unstyled\">\r\n                                        <li v-for=\"(sub_task, index) in tasks\" v-if=\"task.id == sub_task.parent_id\">\r\n                                            <div class=\"li-content d-flex\">\r\n                                                <div class=\"li-left d-flex justify-content-center align-items-center\">\r\n                                                    <i class=\"fa fa-fw fa-circle\" v-bind:class=\"{'acepted-state': task.state == 'ACCEPTED','complete-state':task.state == 'COMPLETE', 'expirate-state':task.state == 'EXPIRATE'}\"></i>\r\n                                                </div>\r\n                                                <div class=\"li-main d-flex align-items-center\">\r\n                                                    <label class=\"m-0\">sub_task.name</label>\r\n                                                </div>\r\n                                                <div class=\"li-right\"></div>\r\n                                            </div>\r\n                                        </li>\r\n                                    </ul>\r\n                                </div>\r\n                            </li>\r\n                        </template>\r\n                    </ul>\r\n                </div>\r\n        </div>\r\n        <div class=\"tracing-legend mt-auto mb-0\">\r\n            <ul class=\"list-unstyled d-flex flex-column flex-sm-row align-items-center justify-content-center\">\r\n                <li><i class=\"fa fa-fw fa-circle complete-legend mr-1\"></i>{{completed}}</li>\r\n                <li class=\"ml-5 mr-5\"><i class=\"fa fa-fw fa-circle exec-legend mr-1\"></i>{{execution}}</li>\r\n                <li><i class=\"fa fa-fw fa-circle timed-out-legend mr-1\"></i>{{expirated}}</li>\r\n            </ul>\r\n        </div>\r\n    </div>\r\n    <div class=\"separator d-none d-md-block\" *ngIf=\"selectedTask\"></div>\r\n    <div class=\"w-100 h-100 d-flex flex-column\" *ngIf=\"selectedTask\">\r\n        <app-task-detail  [type]=\"selectedType\" [task]=\"selectedTask\" (saveNewTask)=\"saveNewTask($event)\" (passAction)=\"execAction($event)\" [tasks]=\"selectedTaskSons\" class=\"show_pane w-100 h-100 flex-column\"></app-task-detail>\r\n    </div>\r\n</section>\r\n"
 
 /***/ }),
 
@@ -3135,6 +3155,7 @@ var TracingComponent = /** @class */ (function () {
         this.completed = undefined;
         this.execution = undefined;
         this.expirated = undefined;
+        this.task_state_send = undefined;
         this.texts = undefined;
         this.language = undefined;
         this.language = localStorage.getItem("lang");
@@ -3156,6 +3177,7 @@ var TracingComponent = /** @class */ (function () {
             _this.completed = k.find(function (f) { return f.name == "follow_caption_complete"; }).description[lang];
             _this.execution = k.find(function (f) { return f.name == "follow_caption_execution"; }).description[lang];
             _this.expirated = k.find(function (f) { return f.name == "follow_caption_expirated"; }).description[lang];
+            _this.task_state_send = k.find(function (f) { return f.name == "task_state_send"; }).description[lang];
         });
     };
     TracingComponent.prototype.getTasks = function () {
