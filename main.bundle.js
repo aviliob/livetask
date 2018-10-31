@@ -423,6 +423,7 @@ var AuthService = /** @class */ (function () {
         return navLanguage;
     };
     AuthService.prototype.socialUserRegister = function (user) {
+        console.log("usuario", user);
         var url = this.base_url + "socialregister";
         return this.http.post(url, user);
     };
@@ -1592,8 +1593,10 @@ var LoginComponent = /** @class */ (function () {
                     _this.setCookie();
                 }
                 else {
-                    console.log("something happened", f);
+                    console.log("no ok", f);
                 }
+            }, function (error) {
+                console.log("err", error);
             });
         }).catch(function (err) {
             console.log("NO OKEY: " + err);
