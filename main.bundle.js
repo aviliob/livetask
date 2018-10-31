@@ -423,7 +423,6 @@ var AuthService = /** @class */ (function () {
         return navLanguage;
     };
     AuthService.prototype.socialUserRegister = function (user) {
-        console.log("usuario", user);
         var url = this.base_url + "socialregister";
         return this.http.post(url, user);
     };
@@ -1463,8 +1462,8 @@ var LoginComponent = /** @class */ (function () {
                     localStorage.setItem("accessToken", data.stsTokenManager.accessToken);
                     this.cookieService.put('accessToken', data.stsTokenManager.accessToken);
                     if (data.lang === undefined) {
-                        data.lang = navigator.language.split("-")[0];
-                        localStorage.setItem("lang", data.lang);
+                        data["default_language"] = navigator.language.split("-")[0];
+                        localStorage.setItem("lang", data.default_language);
                         this.ps.updateProfile(data);
                     }
                     this.router.navigate(['']);
@@ -1475,8 +1474,8 @@ var LoginComponent = /** @class */ (function () {
                     localStorage.setItem("accessToken", data.uid);
                     this.cookieService.put('accessToken', data.uid);
                     if (data.lang === undefined) {
-                        data.lang = navigator.language.split("-")[0];
-                        localStorage.setItem("lang", data.lang);
+                        data["default_language"] = navigator.language.split("-")[0];
+                        localStorage.setItem("lang", data.default_language);
                         this.ps.updateProfile(data);
                     }
                     this.router.navigate(['']);
@@ -1585,9 +1584,7 @@ var LoginComponent = /** @class */ (function () {
     LoginComponent.prototype.socialSignIn = function (platform) {
         var _this = this;
         this.firebaseService.socialAuth(platform).then(function (callback) {
-            console.log("esto", callback);
             _this.authService.socialUserRegister(callback).subscribe(function (f) {
-                console.log("ok", f);
                 if (f.complete) {
                     _this.log_data = callback;
                     _this.setCookie();
