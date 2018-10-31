@@ -1586,6 +1586,7 @@ var LoginComponent = /** @class */ (function () {
         this.firebaseService.socialAuth(platform).then(function (callback) {
             console.log("esto", callback);
             _this.authService.socialUserRegister(callback).subscribe(function (f) {
+                console.log("ok", f);
                 if (f.complete) {
                     _this.log_data = callback;
                     _this.setCookie();
