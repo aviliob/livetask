@@ -422,6 +422,10 @@ var AuthService = /** @class */ (function () {
         });
         return navLanguage;
     };
+    AuthService.prototype.socialUserRegister = function (user) {
+        var url = this.base_url + "socialregister";
+        return this.http.post(url, user);
+    };
     AuthService = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Injectable"])(),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__angular_common_http__["a" /* HttpClient */],
@@ -1580,8 +1584,16 @@ var LoginComponent = /** @class */ (function () {
     LoginComponent.prototype.socialSignIn = function (platform) {
         var _this = this;
         this.firebaseService.socialAuth(platform).then(function (callback) {
-            _this.log_data = callback;
-            _this.setCookie();
+            console.log("esto", callback);
+            _this.authService.socialUserRegister(callback).subscribe(function (f) {
+                if (f.complete) {
+                    _this.log_data = callback;
+                    _this.setCookie();
+                }
+                else {
+                    console.log("something happened", f);
+                }
+            });
         }).catch(function (err) {
             console.log("NO OKEY: " + err);
         });
