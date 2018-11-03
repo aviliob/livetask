@@ -379,13 +379,14 @@ var AuthService = /** @class */ (function () {
             this.router.navigate(['login']);
         }
         else if (lang === undefined) {
+            console.log("here");
             this.ps.getProfile(mail).subscribe(function (data) {
-                if (data.lang === undefined) {
-                    data.lang = navLang;
+                if (data.default_lang === undefined) {
+                    data["default_lang"] = navLang;
                     _this.ps.updateProfile(data);
                 }
                 else {
-                    localStorage.setItem("lang", data.lang);
+                    localStorage.setItem("lang", data.default_lang);
                 }
             });
         }
@@ -798,6 +799,7 @@ var FolderService = /** @class */ (function () {
         this.get_url = this.base_url + '/api/get/folders/';
         this.post_url = this.base_url + '/api/post/folder/';
         this.delete_url = this.base_url + '/api/delete/folder/';
+        this.update_url = this.base_url + '/api/post/updateFolders/';
     }
     ;
     FolderService.prototype.getFolders = function (mail) {
@@ -815,6 +817,12 @@ var FolderService = /** @class */ (function () {
         var url = this.delete_url;
         var user_mail = localStorage.getItem("mail");
         return this.http.post(url, { folder: folder, user_mail: user_mail }, httpOptions).pipe();
+    };
+    FolderService.prototype.updateFolders = function (folders) {
+        console.log("antes de enviar", folders);
+        var url = this.update_url;
+        var user_mail = localStorage.getItem("mail");
+        return this.http.post(url, { folders: folders, user_mail: user_mail }, httpOptions).pipe();
     };
     FolderService = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Injectable"])(),
@@ -1810,7 +1818,7 @@ var MyTasksComponent = /** @class */ (function () {
         this.texts.subscribe(function (k) {
             _this.sortBy = k.find(function (f) { return f.name == "filter_sorterby"; }).description[lang];
             _this.abcSort = k.find(function (f) { return f.name == "filter_sorterby_abc"; }).description[lang];
-            _this.createdSort = k.find(function (f) { return f.name == "filter_sorterby_abc"; }).description[lang];
+            _this.createdSort = k.find(function (f) { return f.name == "filter_sorterby_created"; }).description[lang];
             _this.upgradeSort = k.find(function (f) { return f.name == "filter_sorterby_upgrade"; }).description[lang];
             _this.completed = k.find(function (f) { return f.name == "filter_completed"; }).description[lang];
             _this.favSort = k.find(function (f) { return f.name == "filter_sorterby_favorites"; }).description[lang];
@@ -1825,6 +1833,7 @@ var MyTasksComponent = /** @class */ (function () {
         var _this = this;
         this.folderService.getFolders(this.user_mail)
             .subscribe(function (data) {
+            console.log("folders!", data);
             _this.folders = data;
         });
     };
@@ -2677,7 +2686,7 @@ var TaskDetailComponent = /** @class */ (function () {
 /***/ "./src/app/task-list/task-list.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"w-100 h-100 d-flex flex-column w-100 task-list-component\">\r\n    <!-- Tab nav -->\r\n    <div class=\"task-list-header d-flex\">\r\n        <ul class=\"nav nav-tabs folder-tabs lt-tabs\">\r\n            <li class=\"nav-item\" *ngFor=\"let folder of folders\">\r\n                <a [attr.id]=\"folder.name+'-tab'\" class=\"nav-link active\" [ngClass]=\"{active:folder.selected}\" data-toggle=\"tab\" [attr.href]=\"'#'+folder.name\" role=\"tab\" [attr.aria-controls]=\"folder.name\" aria-selected=\"true\" (click)=\"changeFolder(folder)\">{{folder.name}}</a>\r\n            </li>           \r\n        </ul>\r\n        <ul class=\"list-unstyled m-0 task-list-options\">\r\n            <li class=\"ml-auto mr-0 nav-item dropdown\">\r\n                <a href=\"#\" class=\"nav-link dropdown-toggle\" data-toggle=\"dropdown\" role=\"button\" aria-haspopup=\"true\" aria-expanded=\"false\"><i class=\"fa fa-fw fa-cog\"></i></a>\r\n                <ul class=\"dropdown-menu dropdown-menu-right flex-column\">\r\n                    <h4>{{title}}</h4>\r\n                    <li class=\"dropdown-item d-flex\" *ngFor=\"let folder of folders\" [attr.folder-name]=\"folder.name\">\r\n                        <a href=\"#\">{{folder.name}}</a>\r\n                        <a href=\"#\" class=\"ml-auto mr-0\" (click)=\"removeFolder($event,folder)\"><i class=\"fa fa-fw fa-trash\"></i></a>\r\n                    </li>\r\n                    <form class=\"add-folder input-group mt-auto mb-0\" (submit)=\"addFolder($event)\">\r\n                        <div class=\"input-group mb-3\">\r\n                            <input type=\"text\" class=\"form-control\" name=\"new_folder_name\" [(ngModel)]=\"new_folder_name\" placeholder=\"{{phAddFolder}}\">\r\n                            <div class=\"input-group-append\">\r\n                                <button class=\"btn\" type=\"submit\"><i class=\"fa fa-fw fa-plus\"></i></button>\r\n                            </div>\r\n                        </div>\r\n                    </form>\r\n                </ul>\r\n            </li>\r\n        </ul>\r\n    </div>\r\n    <!-- Tab panes -->\r\n    <div class=\"tab-content h-100\">\r\n            <div *ngFor=\"let folder of folders\" class=\"tab-pane h-100\" [ngClass]=\"{active:folder.selected}\" [attr.id]=\"folder.name\" role=\"tabpanel\" [attr.aria-labelledby]=\"folder.name+'-tab'\">\r\n                    <ul *ngIf=\"folderHasTasks(folder)\" class=\"tasks-list list-unstyled h-100 m-0\">\r\n                            <template *ngFor=\"let task of tasks\">\r\n                                <li [attr.task-id]=\"task.id\" *ngIf=\"(taskBelongsHere(folder,task) && complete == 1) || (taskBelongsHere(folder,task) && task.state !== 'COMPLETE')\">\r\n                                    <div class=\"li-content d-flex\">\r\n                                        <div class=\"li-left d-flex justify-content-center align-items-center\" (click)=\"setFavorite(task)\">\r\n                                            <i class=\"fa fa-fw\" [ngClass]=\"task.favorite ? 'fa-heart': 'fa-heart-o'\" ></i>\r\n                                        </div>\r\n                                        <div (click)=\"showTask(task)\" class=\"li-main d-flex align-items-center\">{{task.name}}</div>\r\n                                        <div class=\"li-right d-flex justify-content-center align-items-center\">\r\n                                            <ul class=\"d-flex list-unstyled h-100\">\r\n                                                <li><a href=\"#\" title=\"{{btnCompleteTask}}\" class=\"complete d-flex justify-content-center align-items-center h-100\" (click)=\"completeTask($event,task)\"><i class=\"fa fa-check\"></i></a></li>\r\n                                                <li><a href=\"#\" title=\"{{btnDeleteTask}}\" class=\"delete d-flex justify-content-center align-items-center h-100\" (click)=\"deleteTask($event,task)\"><i class=\"fa fa-trash\"></i></a></li>\r\n                                            </ul>\r\n                                        </div>\r\n                                    </div>\r\n                                </li>\r\n                            </template>\r\n                    </ul>\r\n                    <div class=\"without-tasks d-flex w-100 h-100 justify-content-center align-items-center text-center\" *ngIf=\"!folderHasTasks(folder)\">\r\n                        <p>{{emptyFolder}}</p>\r\n                    </div>\r\n            </div>\r\n    </div>\r\n    <!-- Add Task Form -->\r\n    <form class=\"add-task-quick input-group mt-auto mb-0\" (submit)=\"addTask($event)\">\r\n        <div class=\"input-group\">\r\n            <input type=\"text\" class=\"form-control\" name=\"task-name\" placeholder=\"{{phAddTask}}\" [(ngModel)]=\"new_task_name\">\r\n            <div class=\"input-group-append d-flex align-items-center\">\r\n                <button class=\"btn\" type=\"submit\"><i class=\"fa fa-fw fa-plus\"></i></button>\r\n            </div>\r\n        </div>\r\n    </form>\r\n</div>"
+module.exports = "<div class=\"w-100 h-100 d-flex flex-column w-100 task-list-component\">\r\n    <!-- Tab nav -->\r\n    <div class=\"task-list-header d-flex\">\r\n        <ul class=\"nav nav-tabs folder-tabs lt-tabs\">\r\n            <li class=\"nav-item\" *ngFor=\"let folder of folders\">\r\n                <a [attr.id]=\"folder.name+'-tab'\" class=\"nav-link active\" [ngClass]=\"{active:folder.selected}\" data-toggle=\"tab\" [attr.href]=\"'#'+folder.name\" role=\"tab\" [attr.aria-controls]=\"folder.name\" aria-selected=\"true\" (click)=\"changeFolder(folder)\">{{folder.name}}</a>\r\n            </li>           \r\n        </ul>\r\n        <ul class=\"list-unstyled m-0 task-list-options\">\r\n            <li class=\"ml-auto mr-0 nav-item dropdown\">\r\n                <a href=\"#\" class=\"nav-link dropdown-toggle\" data-toggle=\"dropdown\" role=\"button\" aria-haspopup=\"true\" aria-expanded=\"false\"><i class=\"fa fa-fw fa-cog\"></i></a>\r\n                <ul class=\"dropdown-menu dropdown-menu-right flex-column\">\r\n                    <h4>{{title}}</h4>\r\n                    <li class=\"dropdown-item d-flex\" *ngFor=\"let folder of folders\" [attr.folder-name]=\"folder.name\">\r\n                        <a href=\"#\">{{folder.name}}</a>\r\n                        <a href=\"#\" class=\"ml-auto mr-0\" (click)=\"removeFolder($event,folder)\"><i class=\"fa fa-fw fa-trash\"></i></a>\r\n                    </li>\r\n                    <form class=\"add-folder input-group mt-auto mb-0\" (submit)=\"addFolder($event)\">\r\n                        <div class=\"input-group mb-3\">\r\n                            <input type=\"text\" class=\"form-control\" name=\"new_folder_name\" [(ngModel)]=\"new_folder_name\" placeholder=\"{{phAddFolder}}\">\r\n                            <div class=\"input-group-append\">\r\n                                <button class=\"btn\" type=\"submit\"><i class=\"fa fa-fw fa-plus\"></i></button>\r\n                            </div>\r\n                        </div>\r\n                    </form>\r\n                </ul>\r\n            </li>\r\n        </ul>\r\n    </div>\r\n    <!-- Tab panes -->\r\n    <div class=\"tab-content h-100\">\r\n        <div *ngFor=\"let folder of folders\" class=\"tab-pane h-100\" [ngClass]=\"{active:folder.selected}\" [attr.id]=\"folder.name\" role=\"tabpanel\" [attr.aria-labelledby]=\"folder.name+'-tab'\">\r\n                <ul *ngIf=\"folderHasTasks(folder)\" class=\"tasks-list list-unstyled h-100 m-0\">\r\n                        <template *ngFor=\"let task of tasks\">\r\n                            <li [attr.task-id]=\"task.id\" *ngIf=\"(taskBelongsHere(folder,task) && complete == 1) || (taskBelongsHere(folder,task) && task.state !== 'COMPLETE')\">\r\n                                <div class=\"li-content d-flex\">\r\n                                    <div class=\"li-left d-flex justify-content-center align-items-center\" (click)=\"setFavorite(task)\">\r\n                                        <i class=\"fa fa-fw\" [ngClass]=\"task.favorite ? 'fa-heart': 'fa-heart-o'\" ></i>\r\n                                    </div>\r\n                                    <div (click)=\"showTask(task)\" class=\"li-main d-flex align-items-center\">{{task.name}}</div>\r\n                                    <div class=\"li-right d-flex justify-content-center align-items-center\">\r\n                                        <ul class=\"d-flex list-unstyled h-100\">\r\n                                            <li><a href=\"#\" title=\"{{btnCompleteTask}}\" class=\"complete d-flex justify-content-center align-items-center h-100\" (click)=\"completeTask($event,task)\"><i class=\"fa fa-check\"></i></a></li>\r\n                                            <li><a href=\"#\" title=\"{{btnDeleteTask}}\" class=\"delete d-flex justify-content-center align-items-center h-100\" (click)=\"deleteTask($event,task)\"><i class=\"fa fa-trash\"></i></a></li>\r\n                                        </ul>\r\n                                    </div>\r\n                                </div>\r\n                            </li>\r\n                        </template>\r\n                </ul>\r\n                <div class=\"without-tasks d-flex w-100 h-100 justify-content-center align-items-center text-center\" *ngIf=\"!folderHasTasks(folder)\">\r\n                    <p>{{emptyFolder}}</p>\r\n                </div>\r\n        </div>\r\n    </div>\r\n    <!-- Add Task Form -->\r\n    <form class=\"add-task-quick input-group mt-auto mb-0\" (submit)=\"addTask($event)\">\r\n        <div class=\"input-group\">\r\n            <input type=\"text\" class=\"form-control\" name=\"task-name\" placeholder=\"{{phAddTask}}\" [(ngModel)]=\"new_task_name\">\r\n            <div class=\"input-group-append d-flex align-items-center\">\r\n                <button class=\"btn\" type=\"submit\"><i class=\"fa fa-fw fa-plus\"></i></button>\r\n            </div>\r\n        </div>\r\n    </form>\r\n</div>"
 
 /***/ }),
 
@@ -2699,6 +2708,8 @@ module.exports = "/*\r\nTo change this license header, choose License Headers in
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__log_service__ = __webpack_require__("./src/app/log.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_angularfire2_database__ = __webpack_require__("./node_modules/angularfire2/database/index.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_angularfire2_database___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_angularfire2_database__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_linq_es2015__ = __webpack_require__("./node_modules/linq-es2015/lib/linq.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_linq_es2015___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_linq_es2015__);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -2708,6 +2719,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+
 
 
 
@@ -2735,6 +2747,7 @@ var TaskListComponent = /** @class */ (function () {
         this.newTask = undefined;
         this.taskCompleted = undefined;
         this.taskCreated = undefined;
+        this.showFolders = true;
         this.texts = undefined;
         this.language = undefined;
         this.language = localStorage.getItem("lang");
@@ -2753,7 +2766,6 @@ var TaskListComponent = /** @class */ (function () {
         }
     };
     TaskListComponent.prototype.ngOnInit = function () {
-        console.log(this.orderBy);
         this.sortTasks();
         this.loadLanguage(this.language);
     };
@@ -2832,6 +2844,7 @@ var TaskListComponent = /** @class */ (function () {
     TaskListComponent.prototype.targetActiveFolder = function () {
         for (var i in this.folders) {
             if (this.folders[i].selected) {
+                console.log("this active", this.folders[i]);
                 this.active_folder = this.folders[i];
                 return;
             }
@@ -2868,11 +2881,16 @@ var TaskListComponent = /** @class */ (function () {
     };
     TaskListComponent.prototype.addTask = function (e) {
         e.preventDefault();
-        if ((this.new_task_name).trim() == '') {
-            this.addTaskFull();
+        if (this.showFolders) {
+            if ((this.new_task_name).trim() == '') {
+                this.addTaskFull();
+            }
+            else {
+                this.addTaskFast();
+            }
         }
         else {
-            this.addTaskFast();
+            console.log("no existe una carpeta");
         }
     };
     TaskListComponent.prototype.addFolder = function (e) {
@@ -2881,8 +2899,16 @@ var TaskListComponent = /** @class */ (function () {
             console.log("Ingrese un nombre");
         }
         else {
-            var key = this.folders.length;
-            var folder = { id: key, key: key, name: this.new_folder_name, selected: false };
+            var key = 0;
+            var selected = false;
+            if (this.folders == undefined || this.folders == null) {
+                this.folders = [];
+                selected = true;
+            }
+            else {
+                key = Object(__WEBPACK_IMPORTED_MODULE_5_linq_es2015__["AsEnumerable"])(this.folders).Max(function (f) { return f.id; }) + 1;
+            }
+            var folder = { id: key, key: key, name: this.new_folder_name, selected: selected };
             this.folders.push(folder);
             this.folderService.addFolder(folder).subscribe(function (folder_r) {
                 console.log("Folder Added");
@@ -2890,13 +2916,36 @@ var TaskListComponent = /** @class */ (function () {
         }
     };
     TaskListComponent.prototype.removeFolder = function (e, folder) {
+        var _this = this;
         for (var i in this.folders) {
             if (this.folders[i].id == folder.id) {
                 this.folders.splice(+i, 1);
-                this.folderService.deleteFolder(folder).subscribe(function (folder_r) {
-                    console.log("Folder removed");
+                this.folderService.updateFolders(this.folders).subscribe(function (folder_r) {
+                    console.log("Folder removed", folder_r);
+                    _this.targetSelectedFolderOrDefault();
                 });
-                return;
+                break;
+            }
+        }
+        return;
+    };
+    TaskListComponent.prototype.targetSelectedFolderOrDefault = function () {
+        var _this = this;
+        if (this.folders !== undefined && this.folders !== null && this.folders.length > 0) {
+            if (Object(__WEBPACK_IMPORTED_MODULE_5_linq_es2015__["AsEnumerable"])(this.folders).Any(function (f) { return f.selected; })) {
+                var folder = Object(__WEBPACK_IMPORTED_MODULE_5_linq_es2015__["AsEnumerable"])(this.folders).FirstOrDefault(function (f) { return f.selected; });
+                this.changeFolder(folder);
+                var element = document.getElementById(folder.name + "-tab");
+                element.click();
+            }
+            else {
+                var folder_1 = Object(__WEBPACK_IMPORTED_MODULE_5_linq_es2015__["AsEnumerable"])(this.folders).FirstOrDefault();
+                folder_1.selected = true;
+                this.folderService.addFolder(folder_1).subscribe(function (folder_r) {
+                    _this.changeFolder(folder_1);
+                    var element = document.getElementById(folder_1.name + "-tab");
+                    element.click();
+                });
             }
         }
     };
@@ -2945,6 +2994,7 @@ var TaskListComponent = /** @class */ (function () {
             for (var i in _this.tasks) {
                 if (_this.tasks[i].key == task.key) {
                     _this.tasks[i] = task;
+                    _this.sortTasks();
                 }
             }
             console.log(_this.tasks);
@@ -2957,6 +3007,7 @@ var TaskListComponent = /** @class */ (function () {
             for (var i in _this.tasks) {
                 if (_this.tasks[i].key == task.key) {
                     _this.tasks[i] = task;
+                    _this.sortTasks();
                 }
             }
         });
@@ -3018,6 +3069,7 @@ var TaskListComponent = /** @class */ (function () {
         var task = { alert: alert, created: created, folder: folder, dear: dear, dear_mail: dear_mail, description: description, expiration: expiration, favorite: favorite, from: from, from_mail: from_mail, id: id, key: key, name: name, parent_id: parent_id, state: state, updated: updated, visible: visible };
         this.tasks.push(task);
         this.taskService.addTask(task).subscribe(function (task_r) {
+            _this.sortTasks();
             _this.logService.emitChange(_this.taskCreated);
         });
     };
