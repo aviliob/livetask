@@ -1984,6 +1984,7 @@ var ProfileService = /** @class */ (function () {
             .pipe();
     };
     ProfileService.prototype.updateProfile = function (profile) {
+        console.log("save this", profile);
         var url = this.post_url + profile.mail;
         return this.http.post(url, profile, httpOptions).pipe();
     };
@@ -2003,7 +2004,7 @@ var ProfileService = /** @class */ (function () {
 /***/ "./src/app/profile/profile.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<header class=\"main-header d-flex justify-content-center align-items-center\">\r\n\t<h2>{{title}}</h2>\r\n</header>\r\n<section class=\"main-content\">\r\n\t<div class=\"inbox-tasks h-100 d-flex flex-column w-100\" id=\"profile\">\r\n\t\t<form (submit)=\"saveProfile()\" *ngIf=\"profile\" class=\"pt-5 text-center pl-2 pr-2 pr-md-4 pl-md-4\">\r\n\t\t\t<div class=\"w-100 text-center\">\r\n\t\t\t\t<figure>\r\n\t\t\t\t\t<img class=\"profileImg\" src=\"{{profile.image}}\" alt=\"\">\r\n\t\t\t\t\t<label for=\"imgSelect\">\r\n\t\t\t\t\t\t<i class=\"fa fa-camera\"></i>\r\n\t\t\t\t\t</label>\r\n\t\t\t\t</figure>\r\n\t\t\t</div>\r\n\t\t\t<input class=\"d-none\" type=\"file\" name=\"imgSelect\" id=\"imgSelect\" accept=\".png, .jpg, .jpeg\" (input)=\"changeImg($event)\">\r\n\t\t\t<input class=\"form-control\" type=\"text\" name=\"name\" [(ngModel)]=\"profile.name\">\r\n\t\t\t<label class=\"form-control text-left\">{{profile.mail}}</label>\r\n\t\t\t<button class=\"btn btn-primary\" type=\"submit\">{{btnSave}}</button>\r\n\t\t</form>\r\n\t</div>\r\n</section>"
+module.exports = "<header class=\"main-header d-flex justify-content-center align-items-center\">\r\n\t<h2>{{title}}</h2>\r\n</header>\r\n<section class=\"main-content\">\r\n\t<div class=\"inbox-tasks h-100 d-flex flex-column w-100\" id=\"profile\">\r\n\t\t<form (submit)=\"saveProfile($event)\" *ngIf=\"profile\" class=\"pt-5 text-center pl-2 pr-2 pr-md-4 pl-md-4\">\r\n\t\t\t<div class=\"w-100 text-center\">\r\n\t\t\t\t<figure>\r\n\t\t\t\t\t<img class=\"profileImg\" src=\"{{profile.image}}\" alt=\"\">\r\n\t\t\t\t\t<label for=\"imgSelect\">\r\n\t\t\t\t\t\t<i class=\"fa fa-camera\"></i>\r\n\t\t\t\t\t</label>\r\n\t\t\t\t</figure>\r\n\t\t\t</div>\r\n\t\t\t<input class=\"d-none\" type=\"file\" name=\"imgSelect\" id=\"imgSelect\" accept=\".png, .jpg, .jpeg\" (input)=\"changeImg($event)\">\r\n\t\t\t<input class=\"form-control\" type=\"text\" name=\"name\" [(ngModel)]=\"profile.name\">\r\n\t\t\t<label class=\"form-control text-left\">{{profile.mail}}</label>\r\n\t\t\t<button class=\"btn btn-primary\" type=\"submit\">{{btnSave}}</button>\r\n\t\t</form>\r\n\t</div>\r\n</section>"
 
 /***/ }),
 
@@ -2046,6 +2047,8 @@ var ProfileComponent = /** @class */ (function () {
         this.title = undefined;
         this.btnSave = undefined;
         this.profile_updated = undefined;
+        this.uploadImg = undefined;
+        this.imgType = undefined;
         this.texts = undefined;
         this.language = undefined;
         this.mail = localStorage.getItem("mail");
@@ -2066,14 +2069,19 @@ var ProfileComponent = /** @class */ (function () {
             _this.profile_updated = k.find(function (f) { return f.name == "myprofile_save_data"; }).description[lang];
         });
     };
-    ProfileComponent.prototype.saveProfile = function () {
+    ProfileComponent.prototype.saveProfile = function (e) {
         var _this = this;
+        e.preventDefault();
+        this.getImgData();
+        this.profile.dataImage = this.uploadImg;
+        console.log("save", this.profile);
         this.pf.updateProfile(this.profile).subscribe(function (response) {
             _this.ls.emitChange(_this.profile_updated);
         });
     };
     ProfileComponent.prototype.changeImg = function (e) {
         var file = e.target.files[0];
+        this.imgType = file.type;
         var reader = new FileReader();
         reader.onload = this.fileOnload;
         reader.readAsDataURL(file);
@@ -2081,6 +2089,12 @@ var ProfileComponent = /** @class */ (function () {
     ProfileComponent.prototype.fileOnload = function (e) {
         var result = e.target.result;
         document.getElementsByClassName("profileImg")[0].setAttribute("src", result);
+    };
+    ProfileComponent.prototype.getImgData = function () {
+        this.uploadImg = {
+            data: document.getElementsByClassName("profileImg")[0].getAttribute("src"),
+            type: this.imgType
+        };
     };
     ProfileComponent = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
@@ -2747,7 +2761,6 @@ var TaskListComponent = /** @class */ (function () {
         this.newTask = undefined;
         this.taskCompleted = undefined;
         this.taskCreated = undefined;
-        this.showFolders = true;
         this.texts = undefined;
         this.language = undefined;
         this.language = localStorage.getItem("lang");
@@ -2881,7 +2894,7 @@ var TaskListComponent = /** @class */ (function () {
     };
     TaskListComponent.prototype.addTask = function (e) {
         e.preventDefault();
-        if (this.showFolders) {
+        if (this.folders != undefined && this.folders != null) {
             if ((this.new_task_name).trim() == '') {
                 this.addTaskFull();
             }
@@ -2921,7 +2934,6 @@ var TaskListComponent = /** @class */ (function () {
             if (this.folders[i].id == folder.id) {
                 this.folders.splice(+i, 1);
                 this.folderService.updateFolders(this.folders).subscribe(function (folder_r) {
-                    console.log("Folder removed", folder_r);
                     _this.targetSelectedFolderOrDefault();
                 });
                 break;
